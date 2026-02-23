@@ -33,6 +33,22 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/admin/settings");
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch settings", e);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     if (!isPending && pathname !== "/admin/login") {
@@ -74,7 +90,7 @@ export default function AdminLayout({
     { href: "/admin/coupons", label: "Promo Codes", icon: Ticket },
 
     { href: "/admin/customers", label: "Customer Base", icon: Users },
-    { href: "/admin/analytics", label: "Business Insights", icon: BarChart3 },
+    // { href: "/admin/analytics", label: "Business Insights", icon: BarChart3 },
     { href: "/admin/enquiries", label: "Event Enquiries", icon: ClipboardList },
     { href: "/admin/legal", label: "Legal Pages", icon: FileText },
   ];
@@ -101,8 +117,16 @@ export default function AdminLayout({
         <div
           className={`flex items-center gap-4 mb-8 p-6 ${isCollapsed ? "justify-center" : ""}`}
         >
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#2F3E2C] font-black italic shadow-lg shrink-0">
-            SN
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-lg shrink-0">
+            {settings?.logo ? (
+              <img
+                src={settings.logo}
+                className="w-full h-full object-contain p-1"
+                alt="Logo"
+              />
+            ) : (
+              <span className="text-[#2F3E2C] font-black italic">SN</span>
+            )}
           </div>
           {!isCollapsed && (
             <motion.div
@@ -112,7 +136,7 @@ export default function AdminLayout({
               className="whitespace-nowrap overflow-hidden"
             >
               <h1 className="text-lg font-serif font-black tracking-tight leading-none uppercase text-[#F8F6F2]">
-                Sai Nandhini
+                {settings?.shopName || "Sai Nandhini"}
               </h1>
               <p className="text-[9px] text-[#C6A75E] uppercase font-black tracking-[0.2em] mt-1">
                 Admin Portal

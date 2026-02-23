@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { sendStatusUpdateEmail } from "@/lib/email-service";
 
 export async function PUT(
   req: Request,
@@ -21,10 +22,17 @@ export async function PUT(
     await connectDB();
     const body = await req.json();
 
+    const existingOrder = await Order.findById(id);
+    if (!existingOrder) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
     // We only allow updating delivery or payment status manually for admin (though payment should usually be automated)
     const updateData: any = {};
+    let statusChanged = false;
     // Updatable fields
-    if (body.status) {
+    if (body.status && body.status !== existingOrder.status) {
+      statusChanged = true;
       updateData.status = body.status;
       if (body.status === "Delivered") {
         updateData.isDelivered = true;
@@ -33,7 +41,6 @@ export async function PUT(
         updateData.isDelivered = false;
         updateData.deliveredAt = null;
       }
-      // TODO: Send email notification on status change (e.g., to 'Shipping' with AWB)
     }
 
     if (body.awbNumber) {
@@ -54,6 +61,18 @@ export async function PUT(
 
     if (!order)
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
+
+    if (statusChanged) {
+      // Fire and forget email sending
+      (async () => {
+        try {
+          await sendStatusUpdateEmail(order);
+        } catch (err) {
+          console.error("Failed to send status update email:", err);
+        }
+      })();
+    }
+
     return NextResponse.json(order);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

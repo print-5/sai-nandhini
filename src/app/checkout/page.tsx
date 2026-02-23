@@ -82,6 +82,7 @@ export default function CheckoutPage() {
             qty: item.qty,
             image: item.image,
             price: item.price,
+            uom: item.uom,
           })),
           shippingAddress: {
             fullName: address.fullName,

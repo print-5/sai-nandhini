@@ -18,17 +18,10 @@ const SettingsSchema = new Schema(
       default: "Free delivery on orders above ₹500!",
     },
     minOrderValue: { type: Number, default: 0 },
+    lowStockThreshold: { type: Number, default: 10 },
+    manageInventory: { type: Boolean, default: true },
     logo: { type: String, default: "" },
-    heroBanner: {
-      type: String,
-      default:
-        "https://images.pexels.com/photos/1854652/pexels-photo-1854652.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    },
-    secondaryBanner: {
-      type: String,
-      default:
-        "https://images.pexels.com/photos/1721932/pexels-photo-1721932.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    },
+    favicon: { type: String, default: "" },
     socialMedia: {
       facebook: { type: String, default: "" },
       instagram: { type: String, default: "" },

@@ -129,6 +129,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const contentType = req.headers.get("content-type");
+    if (contentType?.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      const file = formData.get("file") as File;
+      if (file) {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
+        const result = await uploadToCloudinary(
+          base64Image,
+          "sainandhini/hero",
+        );
+        return NextResponse.json(result);
+      }
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
     const body = await req.json();
     await connectDB();
 

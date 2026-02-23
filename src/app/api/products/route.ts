@@ -3,16 +3,31 @@ import connectDB from "@/lib/mongodb";
 import Product from "@/models/Product";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function GET(req: Request) {
   try {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
+    const isAdmin = searchParams.get("admin") === "true"; // New param to bypass for admin view
 
-    const query = category ? { category } : {};
+    const query: any = category ? { category } : {};
+
+    // Inventory Filtering
+    if (!isAdmin) {
+      const Settings = (await import("@/models/Settings")).default;
+      const settings = await Settings.findOne();
+
+      if (settings?.manageInventory ?? true) {
+        // If managing inventory, only show products where:
+        // 1. Base stock > 0
+        // 2. OR at least one variant has stock > 0
+        query.$or = [{ stock: { $gt: 0 } }, { "variants.stock": { $gt: 0 } }];
+      }
+    }
+
     const products = await Product.find(query);
-
     return NextResponse.json(products);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -30,10 +45,53 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-    const body = await req.json();
-    const product = await Product.create(body);
+    const contentType = req.headers.get("content-type");
 
-    return NextResponse.json(product, { status: 201 });
+    if (contentType?.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      const file = formData.get("file") as File;
+
+      // Standalone upload for ImageUpload component
+      if (file && !formData.get("data")) {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
+        const { secure_url } = await uploadToCloudinary(
+          base64Image,
+          "sainandhini/products",
+        );
+        return NextResponse.json({ secure_url });
+      }
+
+      const dataStr = formData.get("data") as string;
+      if (!dataStr) {
+        return NextResponse.json({ error: "Missing data" }, { status: 400 });
+      }
+
+      const body = JSON.parse(dataStr);
+      const newImages = formData.getAll("newImages") as File[];
+      const uploadedUrls = [];
+
+      for (const file of newImages) {
+        if (!file || !(file instanceof File)) continue;
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
+        const { secure_url } = await uploadToCloudinary(
+          base64Image,
+          "sainandhini/products",
+        );
+        uploadedUrls.push(secure_url);
+      }
+
+      body.images = [...(body.images || []), ...uploadedUrls];
+      const product = await Product.create(body);
+
+      return NextResponse.json(product, { status: 201 });
+    }
+
+    return NextResponse.json(
+      { error: "Unsupported media type" },
+      { status: 415 },
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

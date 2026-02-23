@@ -159,12 +159,22 @@ export default function Navbar() {
 
               {/* Brand Logo */}
               <Link href="/" className="flex flex-col items-center group">
-                <span className="text-2xl md:text-3xl font-serif font-black text-white tracking-normal leading-none group-hover:text-[#C6A75E] transition-colors">
-                  Sai Nandhini
-                </span>
-                <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#C6A75E] leading-none mt-1">
-                  Tasty World – Madurai
-                </span>
+                {settings?.logo ? (
+                  <img
+                    src={settings.logo}
+                    alt={settings.shopName || "Sai Nandhini"}
+                    className="h-10 md:h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                  />
+                ) : (
+                  <>
+                    <span className="text-2xl md:text-3xl font-serif font-black text-white tracking-normal leading-none group-hover:text-[#C6A75E] transition-colors">
+                      Sai Nandhini
+                    </span>
+                    <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#C6A75E] leading-none mt-1">
+                      Tasty World – Madurai
+                    </span>
+                  </>
+                )}
               </Link>
 
               {/* Desktop Navigation */}
@@ -224,7 +234,11 @@ export default function Navbar() {
                 </button>
                 {session ? (
                   <Link
-                    href="/admin/dashboard"
+                    href={
+                      session.user.role === "admin"
+                        ? "/admin/dashboard"
+                        : "/orders"
+                    }
                     className="p-2 text-white/70 hover:text-[#C6A75E] transition-colors"
                   >
                     <User size={20} />
@@ -274,12 +288,22 @@ export default function Navbar() {
             >
               <div className="flex justify-between items-center mb-12">
                 <div className="flex flex-col">
-                  <span className="text-xl font-serif font-black text-[#2F3E2C] tracking-tighter">
-                    Sai Nandhini
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#C6A75E]">
-                    Tasty World
-                  </span>
+                  {settings?.logo ? (
+                    <img
+                      src={settings.logo}
+                      alt={settings.shopName || "Sai Nandhini"}
+                      className="h-10 w-auto object-contain mb-2"
+                    />
+                  ) : (
+                    <>
+                      <span className="text-xl font-serif font-black text-[#2F3E2C] tracking-tighter">
+                        Sai Nandhini
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#C6A75E]">
+                        Tasty World
+                      </span>
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={() => setIsMenuOpen(false)}

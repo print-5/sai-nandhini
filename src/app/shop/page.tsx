@@ -41,6 +41,7 @@ function ShopContent() {
   const [priceRange, setPriceRange] = useState([0, 2000]);
   const [minRating, setMinRating] = useState(0);
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [manageInventory, setManageInventory] = useState(true);
   const [sortBy, setSortBy] = useState("Recommended");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -52,16 +53,19 @@ function ShopContent() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [prodRes, catRes] = await Promise.all([
+        const [prodRes, catRes, settingsRes] = await Promise.all([
           fetch("/api/products"),
           fetch("/api/categories"),
+          fetch("/api/admin/settings"),
         ]);
 
         let prodData = await prodRes.json();
         let catData = await catRes.json();
+        let settingsData = await settingsRes.json();
 
         setProducts(Array.isArray(prodData) ? prodData : []);
         setCategories(Array.isArray(catData) ? catData : []);
+        setManageInventory(settingsData.manageInventory ?? true);
       } catch (err) {
         console.error("Fetch error:", err);
         setProducts([]);
@@ -84,7 +88,11 @@ function ShopContent() {
         const matchesPrice =
           p.price >= priceRange[0] && p.price <= priceRange[1];
         const matchesRating = (p.rating || 4.5) >= minRating;
-        const matchesStock = !inStockOnly || p.stock > 0;
+        const matchesStock =
+          !manageInventory ||
+          !inStockOnly ||
+          p.stock > 0 ||
+          (p.variants && p.variants.some((v: any) => v.stock > 0));
         return (
           matchesCategory &&
           matchesSearch &&
@@ -288,24 +296,26 @@ function ShopContent() {
             </div>
 
             {/* Availability */}
-            <div>
-              <h3 className="text-[11px] font-sans font-black text-primary-dark uppercase tracking-widest mb-4">
-                Availability
-              </h3>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <div
-                  className={`w-10 h-6 rounded-full p-1 transition-all ${inStockOnly ? "bg-primary" : "bg-gray-200"}`}
-                  onClick={() => setInStockOnly(!inStockOnly)}
-                >
+            {manageInventory && (
+              <div>
+                <h3 className="text-[11px] font-sans font-black text-primary-dark uppercase tracking-widest mb-4">
+                  Availability
+                </h3>
+                <label className="flex items-center gap-3 cursor-pointer group">
                   <div
-                    className={`w-4 h-4 bg-white rounded-full transition-transform ${inStockOnly ? "translate-x-4" : "translate-x-0"}`}
-                  ></div>
-                </div>
-                <span className="text-xs font-sans font-bold text-gray-500 group-hover:text-primary-dark">
-                  Hide Out of Stock
-                </span>
-              </label>
-            </div>
+                    className={`w-10 h-6 rounded-full p-1 transition-all ${inStockOnly ? "bg-primary" : "bg-gray-200"}`}
+                    onClick={() => setInStockOnly(!inStockOnly)}
+                  >
+                    <div
+                      className={`w-4 h-4 bg-white rounded-full transition-transform ${inStockOnly ? "translate-x-4" : "translate-x-0"}`}
+                    ></div>
+                  </div>
+                  <span className="text-xs font-sans font-bold text-gray-500 group-hover:text-primary-dark">
+                    Hide Out of Stock
+                  </span>
+                </label>
+              </div>
+            )}
           </aside>
 
           {/* 3. High-Density Product Grid (Bringing Items Above Fold) */}
@@ -383,7 +393,14 @@ function ShopContent() {
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                   <AnimatePresence mode="popLayout">
                     {paginatedProducts.map((p) => {
-                      const isOutOfStock = p.stock === 0;
+                      const totalStock =
+                        p.variants && p.variants.length > 0
+                          ? p.variants.reduce(
+                              (acc: number, v: any) => acc + (v.stock || 0),
+                              0,
+                            )
+                          : p.stock || 0;
+                      const isOutOfStock = manageInventory && totalStock === 0;
                       return (
                         <motion.div
                           layout
@@ -466,21 +483,35 @@ function ShopContent() {
 
                                 {/* Primary Action Button */}
                                 <button
-                                  onClick={() =>
-                                    !isOutOfStock && addToCart(p, 1)
-                                  }
+                                  onClick={() => {
+                                    if (isOutOfStock) return;
+                                    if (p.variants && p.variants.length > 0) {
+                                      // Find first in-stock variant, or default to first if none found (fallback)
+                                      const bestVariant =
+                                        p.variants.find(
+                                          (v: any) =>
+                                            !manageInventory || v.stock > 0,
+                                        ) || p.variants[0];
+                                      addToCart(
+                                        {
+                                          ...p,
+                                          price: bestVariant.price,
+                                          uom: bestVariant.uom,
+                                        },
+                                        1,
+                                      );
+                                    } else {
+                                      addToCart(p, 1);
+                                    }
+                                  }}
                                   disabled={isOutOfStock}
-                                  className={`w-full py-3 rounded-2xl text-[10px] font-sans font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                                  className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 ${
                                     isOutOfStock
-                                      ? "bg-secondary/20 text-primary/20 cursor-not-allowed"
-                                      : "bg-primary-dark text-white hover:bg-accent hover:text-primary-dark hover:shadow-xl hover:translate-y-[-2px] active:scale-[0.98]"
+                                      ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                      : "bg-primary text-white hover:bg-primary-dark"
                                   }`}
                                 >
-                                  {isOutOfStock ? (
-                                    <Package size={14} />
-                                  ) : (
-                                    <ShoppingCart size={14} />
-                                  )}
+                                  <ShoppingCart size={14} />
                                   {isOutOfStock ? "Sold Out" : "Add to Basket"}
                                 </button>
                               </div>

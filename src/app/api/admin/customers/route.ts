@@ -21,15 +21,16 @@ export async function GET(req: Request) {
     const phone = searchParams.get("phone");
 
     if (phone) {
-      const customer = await User.findOne({ phone, role: "customer" }).select(
-        "-password",
-      );
+      const customer = await User.findOne({
+        phone,
+        role: { $in: ["customer", "user"] },
+      }).select("-password");
       if (!customer) return NextResponse.json(null);
       return NextResponse.json(customer);
     }
 
-    // Get all customers
-    const customers = await User.find({ role: "customer" })
+    // Get all customers (and standard users)
+    const customers = await User.find({ role: { $in: ["customer", "user"] } })
       .select("-password")
       .sort({ createdAt: -1 });
 

@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
 import User from "@/models/User";
+import Settings from "@/models/Settings";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -67,8 +68,14 @@ export async function GET() {
     const productsCount = await Product.countDocuments();
     const customersCount = await User.countDocuments({ role: "customer" });
 
+    // 1.5 Get Threshold from settings
+    const settings = await Settings.findOne();
+    const threshold = settings?.lowStockThreshold || 10;
+
     // Stock Alerts
-    const lowStockProducts = await Product.find({ stock: { $lte: 10, $gt: 0 } })
+    const lowStockProducts = await Product.find({
+      stock: { $lte: threshold, $gt: 0 },
+    })
       .select("name stock uom image")
       .limit(5);
     const outOfStockProducts = await Product.find({ stock: 0 })

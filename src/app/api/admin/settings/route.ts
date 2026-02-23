@@ -4,13 +4,14 @@ import Settings from "@/models/Settings";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { encryptPassword } from "@/lib/encryption";
+import uploadToCloudinary from "@/lib/cloudinary";
 
 const MASKED = "********";
 
 export async function GET() {
   try {
     await connectDB();
-    const settings = await Settings.findOne({ isActive: true });
+    const settings = await Settings.findOne();
 
     if (settings) {
       // Mask secrets before sending to frontend (exact ref repo pattern)
@@ -40,7 +41,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const data = await req.json();
+    const contentType = req.headers.get("content-type");
+    let data;
+
+    if (contentType?.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      const file = formData.get("file") as File;
+      if (file) {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
+        const result = await uploadToCloudinary(
+          base64Image,
+          "sainandhini/brand",
+        );
+        return NextResponse.json(result);
+      }
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    data = await req.json();
     await connectDB();
 
     // Handle Razorpay secret encryption (exact ref repo pattern)

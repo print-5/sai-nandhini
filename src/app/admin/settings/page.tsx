@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ImageUpload from "@/components/admin/ImageUpload";
 
 // Reusable card wrapper
 function SettingsCard({
@@ -334,68 +335,24 @@ export default function AdminSettings() {
                   </div>
                 </label>
 
-                {/* Banner Images */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <FieldLabel>Hero Banner Image URL</FieldLabel>
-                    <div className="relative">
-                      <ImageIcon
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-                        size={15}
-                      />
-                      <input
-                        type="text"
-                        value={settings.heroBanner || ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            heroBanner: e.target.value,
-                          })
-                        }
-                        placeholder="Paste image URL..."
-                        className={`${INPUT_CLASS} pl-10`}
-                      />
-                    </div>
-                    {settings.heroBanner && (
-                      <div className="mt-2 rounded-lg overflow-hidden h-16 border border-gray-200">
-                        <img
-                          src={settings.heroBanner}
-                          className="w-full h-full object-cover"
-                          alt="Hero Banner Preview"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <FieldLabel>Secondary Banner URL</FieldLabel>
-                    <div className="relative">
-                      <ImageIcon
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-                        size={15}
-                      />
-                      <input
-                        type="text"
-                        value={settings.secondaryBanner || ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            secondaryBanner: e.target.value,
-                          })
-                        }
-                        placeholder="Paste image URL..."
-                        className={`${INPUT_CLASS} pl-10`}
-                      />
-                    </div>
-                    {settings.secondaryBanner && (
-                      <div className="mt-2 rounded-lg overflow-hidden h-16 border border-gray-200">
-                        <img
-                          src={settings.secondaryBanner}
-                          className="w-full h-full object-cover"
-                          alt="Secondary Banner Preview"
-                        />
-                      </div>
-                    )}
-                  </div>
+                {/* Assets */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <ImageUpload
+                    label="Store Logo"
+                    value={settings.logo || ""}
+                    onChange={(url) => setSettings({ ...settings, logo: url })}
+                    folder="sainandhini/brand"
+                    endpoint="/api/admin/settings"
+                  />
+                  <ImageUpload
+                    label="Favicon"
+                    value={settings.favicon || ""}
+                    onChange={(url) =>
+                      setSettings({ ...settings, favicon: url })
+                    }
+                    folder="sainandhini/brand"
+                    endpoint="/api/admin/settings"
+                  />
                 </div>
               </div>
             </SettingsCard>
@@ -430,6 +387,44 @@ export default function AdminSettings() {
                       </span>
                     </div>
                   </label>
+                  <label className="block">
+                    <FieldLabel>Low Stock Alert</FieldLabel>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={settings.lowStockThreshold ?? ""}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            lowStockThreshold: Number(e.target.value),
+                          })
+                        }
+                        className={`${INPUT_CLASS} pr-8`}
+                      />
+                      <AlertTriangle
+                        className="absolute right-3 top-3.5 text-orange-400"
+                        size={14}
+                      />
+                    </div>
+                  </label>
+                  <label className="block sm:col-span-1">
+                    <FieldLabel>Inventory Control</FieldLabel>
+                    <div className="pt-2">
+                      <ToggleSwitch
+                        checked={!!settings.manageInventory}
+                        onChange={() =>
+                          setSettings({
+                            ...settings,
+                            manageInventory: !settings.manageInventory,
+                          })
+                        }
+                        label="Manage Inventory"
+                        description="Track stock levels & hide OOS items"
+                      />
+                    </div>
+                  </label>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <label className="block">
                     <FieldLabel>Shipping Fee</FieldLabel>
                     <div className="relative">
@@ -903,33 +898,6 @@ export default function AdminSettings() {
                     }`}
                   />
                 </div>
-              </div>
-
-              {/* Danger Zone */}
-              <div className="bg-red-50 p-6 md:p-8 rounded-2xl border border-red-100 flex items-center justify-between group">
-                <div>
-                  <h4 className="text-base font-bold text-red-700 mb-0.5 flex items-center gap-2">
-                    <AlertTriangle size={16} />
-                    Danger Zone
-                  </h4>
-                  <p className="text-xs text-red-400">
-                    Irreversible data loss warning
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (confirm("DELETE ALL DATA? This cannot be undone.")) {
-                      const res = await fetch("/api/admin/reset-demo-data", {
-                        method: "POST",
-                      });
-                      if (res.ok) window.location.reload();
-                    }
-                  }}
-                  className="px-5 py-2.5 bg-white text-red-500 rounded-xl text-xs font-bold uppercase tracking-wide shadow-sm hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                >
-                  Reset Data
-                </button>
               </div>
             </div>
           </div>

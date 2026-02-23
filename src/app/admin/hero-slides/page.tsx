@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import ImageUpload from "@/components/admin/ImageUpload";
 
 /* ────────────────────────────────────────────── */
 /*  Types                                         */
@@ -65,8 +66,6 @@ export default function HeroSlidesPage() {
   const [saving, setSaving] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* ── Fetch Slides ── */
   useEffect(() => {
@@ -88,40 +87,18 @@ export default function HeroSlidesPage() {
   };
 
   /* ── Handle Image Upload ── */
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be under 5MB");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result as string;
-      setImagePreview(base64);
-      if (editingSlide) {
-        setEditingSlide({ ...editingSlide, image: base64 });
-      }
-    };
-    reader.readAsDataURL(file);
-  };
 
   /* ── Open editor for new or existing slide ── */
   const openEditor = (slide?: HeroSlide) => {
     if (slide) {
       setEditingSlide({ ...slide });
-      setImagePreview(slide.image || null);
     } else {
       setEditingSlide({ ...emptySlide, order: slides.length + 1 });
-      setImagePreview(null);
     }
   };
 
   const closeEditor = () => {
     setEditingSlide(null);
-    setImagePreview(null);
   };
 
   /* ── Save (Create or Update) ── */
@@ -413,47 +390,16 @@ export default function HeroSlidesPage() {
                 {/* Modal Body */}
                 <div className="px-8 py-6 space-y-5 max-h-[65vh] overflow-y-auto">
                   {/* Image Upload */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                      Slide Image *
-                    </label>
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="relative cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#C6A75E] rounded-2xl overflow-hidden transition-all group"
-                    >
-                      {imagePreview || editingSlide.image ? (
-                        <div className="relative aspect-[16/9]">
-                          <img
-                            src={imagePreview || editingSlide.image}
-                            alt="Preview"
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <div className="bg-white text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2">
-                              <Upload size={16} /> Change Image
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="aspect-[16/9] flex flex-col items-center justify-center text-gray-400">
-                          <Upload size={32} className="mb-2 text-gray-300" />
-                          <p className="text-sm font-medium">
-                            Click to upload image
-                          </p>
-                          <p className="text-xs text-gray-300 mt-1">
-                            JPG, PNG, WebP — Max 5MB
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageSelect}
-                      className="hidden"
-                    />
-                  </div>
+                  {/* Image Upload */}
+                  <ImageUpload
+                    label="Slide Image"
+                    value={editingSlide.image || ""}
+                    onChange={(url) =>
+                      setEditingSlide({ ...editingSlide, image: url })
+                    }
+                    folder="sainandhini/hero"
+                    endpoint="/api/admin/hero-slides"
+                  />
 
                   {/* Title + Title Accent */}
                   <div className="grid grid-cols-2 gap-4">

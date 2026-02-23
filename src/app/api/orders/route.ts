@@ -4,6 +4,11 @@ import Order from "@/models/Order";
 import User from "@/models/User";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { generateInvoiceHTML } from "@/lib/invoice-generator";
+import { generatePDFFromHTML } from "@/lib/pdf-generator";
+import { sendOrderConfirmationEmail } from "@/lib/email-service";
+import Product from "@/models/Product";
+import Settings from "@/models/Settings";
 
 export async function POST(req: Request) {
   try {
@@ -32,6 +37,64 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
+    const settings = await Settings.findOne();
+    const manageInventory = settings?.manageInventory ?? true;
+
+    // Check and reduce stock if inventory management is enabled
+    if (manageInventory) {
+      const productsToUpdate = [];
+
+      // 1. Validation Loop
+      for (const item of orderItems) {
+        const product = await Product.findById(item.productId);
+        if (!product) {
+          return NextResponse.json(
+            { error: `Product ${item.name} not found` },
+            { status: 404 },
+          );
+        }
+
+        if (item.uom && product.variants && product.variants.length > 0) {
+          const variantIndex = product.variants.findIndex(
+            (v: any) => v.uom === item.uom,
+          );
+          if (variantIndex !== -1) {
+            if (product.variants[variantIndex].stock < item.qty) {
+              return NextResponse.json(
+                {
+                  error: `Insufficient stock for ${product.name} (${item.uom})`,
+                },
+                { status: 400 },
+              );
+            }
+            product.variants[variantIndex].stock -= item.qty;
+          } else {
+            // If UOM specified but not found in variants, fall back to base stock if it exists
+            if (product.stock < item.qty) {
+              return NextResponse.json(
+                { error: `Insufficient stock for ${product.name}` },
+                { status: 400 },
+              );
+            }
+            product.stock -= item.qty;
+          }
+        } else {
+          if (product.stock < item.qty) {
+            return NextResponse.json(
+              { error: `Insufficient stock for ${product.name}` },
+              { status: 400 },
+            );
+          }
+          product.stock -= item.qty;
+        }
+        productsToUpdate.push(product);
+      }
+
+      // 2. Saving Loop (Only run if all items validated)
+      for (const product of productsToUpdate) {
+        await product.save();
+      }
+    }
 
     // Fix for "admin-fallback" or missing user ID
     let userId = session.user.id;
@@ -44,7 +107,7 @@ export async function POST(req: Request) {
     // If still fallback or invalid (only for admin context logic if needed), try to find a root admin or use a specific system user
     if (userId === "admin-fallback" && (session.user as any).role === "admin") {
       const adminUser = await User.findOne({ role: "admin" });
-      if (adminUser) userId = adminUser._id;
+      if (adminUser) userId = adminUser._id.toString();
       else
         return NextResponse.json(
           { error: "No valid admin user found in database to associate order" },
@@ -69,6 +132,23 @@ export async function POST(req: Request) {
     });
 
     const createdOrder = await order.save();
+
+    // If it's Cash on Delivery, send the email immediately
+    if (paymentMethod === "Cash on Delivery") {
+      (async () => {
+        try {
+          const populatedOrder = await Order.findById(
+            createdOrder._id,
+          ).populate("user");
+          const invoiceHTML = await generateInvoiceHTML(populatedOrder);
+          const pdfBuffer = await generatePDFFromHTML(invoiceHTML);
+          await sendOrderConfirmationEmail(populatedOrder, pdfBuffer);
+        } catch (err) {
+          console.error("Failed to send COD order confirmation email:", err);
+        }
+      })();
+    }
+
     return NextResponse.json(createdOrder, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

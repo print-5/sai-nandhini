@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Search,
   Filter,
@@ -25,10 +26,12 @@ import Link from "next/link";
 
 const ORDER_STAGES = ["Pending", "Processing", "Shipping", "Delivered"];
 
-export default function AdminOrdersPage() {
+function OrdersContent() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [statusFilter, setStatusFilter] = useState("All");
   const [paymentFilter, setPaymentFilter] = useState("All");
 
@@ -674,5 +677,13 @@ export default function AdminOrdersPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function AdminOrdersPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading Intelligence...</div>}>
+      <OrdersContent />
+    </Suspense>
   );
 }

@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongodb";
 import Category from "@/models/Category";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function GET() {
   try {
@@ -27,9 +28,47 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-    const { name, image, description } = await req.json();
 
-    const slug = name.toLowerCase().replace(/\s+/g, "-");
+    let name, slug, description, imageUrl;
+    const contentType = req.headers.get("content-type");
+
+    if (contentType?.includes("application/json")) {
+      const body = await req.json();
+      name = body.name;
+      slug = body.slug;
+      description = body.description;
+      imageUrl = body.image;
+    } else {
+      const formData = await req.formData();
+      const file = formData.get("file") as File;
+
+      // Standalone upload for ImageUpload component
+      if (file && !formData.get("name")) {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
+        const result = await uploadToCloudinary(
+          base64Image,
+          "sainandhini/categories",
+        );
+        return NextResponse.json(result);
+      }
+
+      name = formData.get("name") as string;
+      slug = formData.get("slug") as string;
+      description = formData.get("description") as string;
+      const imageFile = formData.get("image") as File;
+
+      if (imageFile && imageFile instanceof File) {
+        const buffer = Buffer.from(await imageFile.arrayBuffer());
+        const base64Image = `data:${imageFile.type};base64,${buffer.toString("base64")}`;
+        const { secure_url } = await uploadToCloudinary(
+          base64Image,
+          "sainandhini/categories",
+        );
+        imageUrl = secure_url;
+      }
+    }
+
     const existing = await Category.findOne({ slug });
     if (existing) {
       return NextResponse.json(
@@ -38,7 +77,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const category = await Category.create({ name, slug, image, description });
+    const category = await Category.create({
+      name,
+      slug,
+      image: imageUrl,
+      description,
+    });
     return NextResponse.json(category, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

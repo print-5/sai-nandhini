@@ -9,8 +9,26 @@ import {
   MapPin,
   ArrowUp,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function Footer() {
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/admin/settings");
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings", error);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -34,9 +52,17 @@ export default function Footer() {
             {/* Column 1: Brand Info */}
             <div className="space-y-5">
               <Link href="/">
-                <h2 className="text-3xl font-serif font-black text-white tracking-wide">
-                  Sai Nandhini
-                </h2>
+                {settings?.logo ? (
+                  <img
+                    src={settings.logo}
+                    alt={settings.shopName || "Sai Nandhini"}
+                    className="h-12 w-auto object-contain mb-4"
+                  />
+                ) : (
+                  <h2 className="text-3xl font-serif font-black text-white tracking-wide">
+                    {settings?.shopName || "Sai Nandhini"}
+                  </h2>
+                )}
               </Link>
               <p className="text-[#C6A75E] font-serif italic text-base">
                 "Crafting Sweet Memories in Every Bite"
@@ -47,34 +73,38 @@ export default function Footer() {
               </p>
 
               <div className="space-y-3.5 pt-4">
-                <a
-                  href="tel:+919600916065"
-                  className="flex items-center gap-3 group text-white/60 hover:text-white transition-colors"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center group-hover:bg-[#C6A75E] group-hover:text-[#2F3E2C] transition-all">
-                    <Phone size={15} />
+                {settings?.contactPhone && (
+                  <a
+                    href={`tel:${settings.contactPhone}`}
+                    className="flex items-center gap-3 group text-white/60 hover:text-white transition-colors"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center group-hover:bg-[#C6A75E] group-hover:text-[#2F3E2C] transition-all">
+                      <Phone size={15} />
+                    </div>
+                    <span className="text-sm">{settings.contactPhone}</span>
+                  </a>
+                )}
+                {settings?.contactEmail && (
+                  <a
+                    href={`mailto:${settings.contactEmail}`}
+                    className="flex items-center gap-3 group text-white/60 hover:text-white transition-colors"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center group-hover:bg-[#C6A75E] group-hover:text-[#2F3E2C] transition-all">
+                      <Mail size={15} />
+                    </div>
+                    <span className="text-sm">{settings.contactEmail}</span>
+                  </a>
+                )}
+                {settings?.address && (
+                  <div className="flex items-center gap-3 text-white/60">
+                    <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center">
+                      <MapPin size={15} />
+                    </div>
+                    <span className="text-sm leading-snug">
+                      {settings.address}
+                    </span>
                   </div>
-                  <span className="text-sm">+91 96009 16065</span>
-                </a>
-                <a
-                  href="mailto:hello@sainandhini.com"
-                  className="flex items-center gap-3 group text-white/60 hover:text-white transition-colors"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center group-hover:bg-[#C6A75E] group-hover:text-[#2F3E2C] transition-all">
-                    <Mail size={15} />
-                  </div>
-                  <span className="text-sm">hello@sainandhini.com</span>
-                </a>
-                <div className="flex items-center gap-3 text-white/60">
-                  <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center">
-                    <MapPin size={15} />
-                  </div>
-                  <span className="text-sm leading-snug">
-                    Kaveri Main Street, SRV Nagar,
-                    <br />
-                    Thirunagar, Madurai - 625006
-                  </span>
-                </div>
+                )}
               </div>
             </div>
 
@@ -156,18 +186,26 @@ export default function Footer() {
 
               {/* Social Media */}
               <div className="flex gap-3">
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center text-white/60 hover:bg-[#C6A75E] hover:text-[#2F3E2C] transition-all"
-                >
-                  <Instagram size={18} />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center text-white/60 hover:bg-[#C6A75E] hover:text-[#2F3E2C] transition-all"
-                >
-                  <Facebook size={18} />
-                </a>
+                {settings?.socialMedia?.instagram && (
+                  <a
+                    href={settings.socialMedia.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center text-white/60 hover:bg-[#C6A75E] hover:text-[#2F3E2C] transition-all"
+                  >
+                    <Instagram size={18} />
+                  </a>
+                )}
+                {settings?.socialMedia?.facebook && (
+                  <a
+                    href={settings.socialMedia.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center text-white/60 hover:bg-[#C6A75E] hover:text-[#2F3E2C] transition-all"
+                  >
+                    <Facebook size={18} />
+                  </a>
+                )}
               </div>
             </div>
           </div>

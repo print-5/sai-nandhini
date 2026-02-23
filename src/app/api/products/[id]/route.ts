@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongodb";
 import Product from "@/models/Product";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function GET(
   req: Request,
@@ -36,7 +37,38 @@ export async function PUT(
 
     await connectDB();
     const { id } = await params;
-    const body = await req.json();
+
+    let body;
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      const dataStr = formData.get("data") as string;
+
+      if (!dataStr) {
+        return NextResponse.json({ error: "Missing data" }, { status: 400 });
+      }
+
+      body = JSON.parse(dataStr);
+      const newImages = formData.getAll("newImages") as File[];
+      const uploadedUrls = [];
+
+      for (const file of newImages) {
+        if (!file || !(file instanceof File)) continue;
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
+        const { secure_url } = await uploadToCloudinary(
+          base64Image,
+          "sainandhini/products",
+        );
+        uploadedUrls.push(secure_url);
+      }
+
+      body.images = [...(body.images || []), ...uploadedUrls];
+    } else {
+      body = await req.json();
+    }
+
     const product = await Product.findByIdAndUpdate(id, body, {
       new: true,
       runValidators: true,
