@@ -19,7 +19,10 @@ export async function GET(
     }
 
     await connectDB();
-    const order = await Order.findById(id);
+    const order = await Order.findById(id).populate({
+      path: "orderItems.product",
+      select: "slug name",
+    });
 
     if (!order)
       return NextResponse.json({ error: "Order not found" }, { status: 404 });

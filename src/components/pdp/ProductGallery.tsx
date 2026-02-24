@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 
 export default function ProductGallery({ images, name }: { images: string[], name: string }) {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -19,14 +19,18 @@ export default function ProductGallery({ images, name }: { images: string[], nam
     const displayImages = images?.length > 0 ? images : ["https://images.pexels.com/photos/2062426/pexels-photo-2062426.jpeg?auto=compress&cs=tinysrgb&w=1000"];
 
     return (
-        <div className="flex flex-col-reverse lg:flex-row gap-6 lg:sticky lg:top-32">
+        <div className="flex flex-col-reverse lg:flex-row gap-4 lg:sticky lg:top-32">
             {/* Thumbnails */}
-            <div className="flex lg:flex-col gap-4 overflow-x-auto no-scrollbar lg:max-h-[600px]">
+            <div className="flex lg:flex-col gap-3 overflow-x-auto no-scrollbar lg:max-h-[600px]">
                 {displayImages.map((img, i) => (
                     <button
                         key={i}
                         onClick={() => setActiveIndex(i)}
-                        className={`relative w-20 h-20 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all ${i === activeIndex ? "border-primary shadow-lg ring-2 ring-primary/20" : "border-primary/5 opacity-60 hover:opacity-100"}`}
+                        className={`relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                            i === activeIndex 
+                                ? "border-primary shadow-md scale-105" 
+                                : "border-gray-200 opacity-60 hover:opacity-100 hover:border-gray-300"
+                        }`}
                     >
                         <img src={img} className="w-full h-full object-cover" alt={`${name} view ${i + 1}`} />
                     </button>
@@ -34,9 +38,9 @@ export default function ProductGallery({ images, name }: { images: string[], nam
             </div>
 
             {/* Main Stage */}
-            <div className="relative flex-grow aspect-square bg-secondary/10 rounded-[3rem] overflow-hidden group border border-primary/5 shadow-inner cursor-zoom-in">
+            <div className="relative flex-grow aspect-square bg-gray-50 rounded-2xl overflow-hidden group border border-gray-200 shadow-sm">
                 <div
-                    className="w-full h-full"
+                    className="w-full h-full cursor-zoom-in"
                     onMouseEnter={() => setIsZoomed(true)}
                     onMouseLeave={() => setIsZoomed(false)}
                     onMouseMove={handleMouseMove}
@@ -47,38 +51,47 @@ export default function ProductGallery({ images, name }: { images: string[], nam
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.4 }}
+                            transition={{ duration: 0.3 }}
                             src={displayImages[activeIndex]}
                             alt={name}
-                            className={`w-full h-full object-cover transition-transform duration-200 ${isZoomed ? "scale-[2.5]" : "scale-100"}`}
+                            className={`w-full h-full object-cover transition-transform duration-200 ${
+                                isZoomed ? "scale-[2.5]" : "scale-100"
+                            }`}
                             style={isZoomed ? { transformOrigin: `${mousePos.x}% ${mousePos.y}%` } : {}}
                         />
                     </AnimatePresence>
                 </div>
 
-                {/* Overlays */}
-                <div className="absolute top-8 left-8">
-                    <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/40 shadow-sm flex items-center gap-2">
-                        <Search size={14} className="text-primary-dark" />
-                        <span className="text-[10px] font-sans font-black uppercase tracking-widest text-primary-dark">Hover to Zoom</span>
+                {/* Zoom Indicator */}
+                <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-200 shadow-sm flex items-center gap-2">
+                        <ZoomIn size={14} className="text-gray-600" />
+                        <span className="text-xs font-medium text-gray-700">Hover to zoom</span>
                     </div>
                 </div>
 
-                {/* Navigation */}
+                {/* Navigation Arrows */}
                 {displayImages.length > 1 && (
-                    <div className="absolute bottom-8 right-8 flex gap-2">
+                    <>
                         <button
                             onClick={() => setActiveIndex(prev => (prev - 1 + displayImages.length) % displayImages.length)}
-                            className="w-12 h-12 bg-white/80 backdrop-blur-md text-primary-dark rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95"
+                            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm text-gray-700 rounded-full flex items-center justify-center hover:bg-white transition-all shadow-md opacity-0 group-hover:opacity-100"
                         >
                             <ChevronLeft size={20} />
                         </button>
                         <button
                             onClick={() => setActiveIndex(prev => (prev + 1) % displayImages.length)}
-                            className="w-12 h-12 bg-white/80 backdrop-blur-md text-primary-dark rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm text-gray-700 rounded-full flex items-center justify-center hover:bg-white transition-all shadow-md opacity-0 group-hover:opacity-100"
                         >
                             <ChevronRight size={20} />
                         </button>
+                    </>
+                )}
+
+                {/* Image Counter */}
+                {displayImages.length > 1 && (
+                    <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium">
+                        {activeIndex + 1} / {displayImages.length}
                     </div>
                 )}
             </div>

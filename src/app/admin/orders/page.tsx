@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 const ORDER_STAGES = ["Pending", "Processing", "Shipping", "Delivered"];
 
@@ -37,10 +38,6 @@ function OrdersContent() {
 
   const [dateRange, setDateRange] = useState("AllTime");
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
   const [viewingOrder, setViewingOrder] = useState<any>(null);
 
   const fetchOrders = async () => {
@@ -55,7 +52,7 @@ function OrdersContent() {
       setOrders(normalizedData);
     } catch (err) {
       console.error(err);
-      showToast("Failed to fetch orders", "error");
+      toast.error("Failed to fetch orders");
     } finally {
       setLoading(false);
     }
@@ -64,14 +61,6 @@ function OrdersContent() {
   useEffect(() => {
     fetchOrders();
   }, []);
-
-  const showToast = (
-    message: string,
-    type: "success" | "error" = "success",
-  ) => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     const previousOrders = [...orders];
@@ -86,10 +75,10 @@ function OrdersContent() {
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error();
-      showToast(`Order status updated to ${newStatus}`);
+      toast.success(`Order status updated to ${newStatus}`);
     } catch (err) {
       setOrders(previousOrders);
-      showToast("Failed to update status", "error");
+      toast.error("Failed to update status");
     }
   };
 
@@ -110,11 +99,13 @@ function OrdersContent() {
         body: JSON.stringify({ orderIds: selectedOrders, status: newStatus }),
       });
       if (!res.ok) throw new Error();
-      showToast(`Bulk updated ${selectedOrders.length} orders to ${newStatus}`);
+      toast.success(
+        `Bulk updated ${selectedOrders.length} orders to ${newStatus}`,
+      );
       setSelectedOrders([]);
     } catch (err) {
       setOrders(previousOrders);
-      showToast("Bulk update failed", "error");
+      toast.error("Bulk update failed");
     }
   };
 
@@ -643,37 +634,6 @@ function OrdersContent() {
               </div>
             </motion.div>
           </>
-        )}
-      </AnimatePresence>
-
-      {/* Local Toast System */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className={`fixed bottom-10 left-10 z-[1000] px-6 py-4 rounded-2xl shadow-2xl border flex items-center gap-3 ${
-              toast.type === "error"
-                ? "bg-red-50 text-red-600 border-red-100"
-                : "bg-[#2F3E2C] text-white border-white/10"
-            }`}
-          >
-            {toast.type === "error" ? (
-              <AlertCircle size={20} />
-            ) : (
-              <CheckCircle2 size={20} className="text-[#C6A75E]" />
-            )}
-            <span className="text-sm font-bold tracking-tight">
-              {toast.message}
-            </span>
-            <button
-              onClick={() => setToast(null)}
-              className="ml-4 opacity-50 hover:opacity-100 transition-opacity"
-            >
-              <X size={16} />
-            </button>
-          </motion.div>
         )}
       </AnimatePresence>
     </div>

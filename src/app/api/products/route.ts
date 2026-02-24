@@ -11,8 +11,15 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
     const isAdmin = searchParams.get("admin") === "true"; // New param to bypass for admin view
+    const exclude = searchParams.get("exclude"); // Exclude specific product ID
+    const limit = searchParams.get("limit"); // Limit number of results
 
     const query: any = category ? { category } : {};
+
+    // Exclude specific product (for related products)
+    if (exclude) {
+      query._id = { $ne: exclude };
+    }
 
     // Inventory Filtering
     if (!isAdmin) {
@@ -27,7 +34,14 @@ export async function GET(req: Request) {
       }
     }
 
-    const products = await Product.find(query);
+    let productsQuery = Product.find(query);
+    
+    // Apply limit if specified
+    if (limit) {
+      productsQuery = productsQuery.limit(parseInt(limit));
+    }
+
+    const products = await productsQuery;
     return NextResponse.json(products);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

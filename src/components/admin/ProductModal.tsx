@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Loader2, ChevronDown, Check, Save } from "lucide-react";
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -198,7 +199,7 @@ export default function ProductModal({
 
     const files = Array.from(e.target.files);
     if (formData.images.length + files.length > 4) {
-      alert("Maximum 4 images allowed per product.");
+      toast.error("Maximum 4 images allowed per product.");
       return;
     }
 

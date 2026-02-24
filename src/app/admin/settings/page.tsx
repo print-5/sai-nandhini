@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
+import toast from "react-hot-toast";
+import ConfirmationModal from "@/components/admin/ConfirmationModal";
 
 // Reusable card wrapper
 function SettingsCard({
@@ -120,6 +122,7 @@ export default function AdminSettings() {
   const [message, setMessage] = useState("");
   const [showRzpSecret, setShowRzpSecret] = useState(false);
   const [showSmtpPass, setShowSmtpPass] = useState(false);
+  const [deleteRateId, setDeleteRateId] = useState<string | null>(null);
 
   // Shipping Rates State
   const [shippingRates, setShippingRates] = useState<any[]>([]);
@@ -163,6 +166,7 @@ export default function AdminSettings() {
         }),
       });
       if (res.ok) {
+        toast.success("Shipping rate added");
         const rate = await res.json();
         setShippingRates(
           [...shippingRates, rate].sort(
@@ -176,12 +180,19 @@ export default function AdminSettings() {
     }
   };
 
-  const deleteRate = async (id: string) => {
+  const deleteRate = async () => {
+    if (!deleteRateId) return;
     try {
-      await fetch(`/api/admin/shipping-rates/${id}`, { method: "DELETE" });
-      setShippingRates(shippingRates.filter((r) => r._id !== id));
+      await fetch(`/api/admin/shipping-rates/${deleteRateId}`, {
+        method: "DELETE",
+      });
+      setShippingRates(shippingRates.filter((r) => r._id !== deleteRateId));
+      toast.success("Shipping rate deleted");
     } catch (e) {
       console.error(e);
+      toast.error("Failed to delete rate");
+    } finally {
+      setDeleteRateId(null);
     }
   };
 
@@ -189,14 +200,31 @@ export default function AdminSettings() {
     e.preventDefault();
     setSaving(true);
     try {
+      const formData = new FormData();
+      // Clone settings and remove File objects for JSON stringification
+      const settingsData = { ...settings };
+      const logoFile =
+        settingsData.logo instanceof File ? settingsData.logo : null;
+      const faviconFile =
+        settingsData.favicon instanceof File ? settingsData.favicon : null;
+
+      if (logoFile) settingsData.logo = "";
+      if (faviconFile) settingsData.favicon = "";
+
+      formData.append("data", JSON.stringify(settingsData));
+      if (logoFile) formData.append("logo", logoFile);
+      if (faviconFile) formData.append("favicon", faviconFile);
+
       const res = await fetch("/api/admin/settings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
+        body: formData,
       });
+
       if (res.ok) {
-        setMessage("Configuration Saved");
-        setTimeout(() => setMessage(""), 3000);
+        toast.success("Configuration Saved successfully");
+        // Refresh settings to get the new URLs
+        const updated = await res.json();
+        setSettings(updated);
       }
     } catch (err) {
       console.error(err);
@@ -248,6 +276,16 @@ export default function AdminSettings() {
             </AnimatePresence>
           </div>
         </header>
+
+        <ConfirmationModal
+          isOpen={!!deleteRateId}
+          onClose={() => setDeleteRateId(null)}
+          onConfirm={() => deleteRate()}
+          title="Delete Shipping Rate"
+          message="Are you sure you want to delete this shipping weighted rate?"
+          confirmText="Delete"
+          type="danger"
+        />
 
         {/* Form */}
         <form onSubmit={handleSave}>
@@ -340,18 +378,14 @@ export default function AdminSettings() {
                   <ImageUpload
                     label="Store Logo"
                     value={settings.logo || ""}
-                    onChange={(url) => setSettings({ ...settings, logo: url })}
-                    folder="sainandhini/brand"
-                    endpoint="/api/admin/settings"
+                    onChange={(val) => setSettings({ ...settings, logo: val })}
                   />
                   <ImageUpload
                     label="Favicon"
                     value={settings.favicon || ""}
-                    onChange={(url) =>
-                      setSettings({ ...settings, favicon: url })
+                    onChange={(val) =>
+                      setSettings({ ...settings, favicon: val })
                     }
-                    folder="sainandhini/brand"
-                    endpoint="/api/admin/settings"
                   />
                 </div>
               </div>
@@ -541,7 +575,7 @@ export default function AdminSettings() {
               />
 
               <div className="space-y-1">
-                <ToggleSwitch
+                {/* <ToggleSwitch
                   checked={!!settings.shippingByWeight}
                   onChange={() =>
                     setSettings({
@@ -551,7 +585,7 @@ export default function AdminSettings() {
                   }
                   label="Weight Based Shipping"
                   description="Calculate fees based on total cart weight"
-                />
+                /> */}
                 <ToggleSwitch
                   checked={!!settings.allowOrderCancellation}
                   onChange={() =>
@@ -605,7 +639,7 @@ export default function AdminSettings() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                deleteRate(rate._id);
+                                setDeleteRateId(rate._id);
                               }}
                               className="text-red-400 hover:text-red-600 transition-colors"
                             >
@@ -870,7 +904,7 @@ export default function AdminSettings() {
             ═══════════════════════════════════════════ */}
             <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Maintenance Mode */}
-              <div className="bg-[#2F3E2C] p-6 md:p-8 rounded-2xl text-white flex items-center justify-between">
+              {/* <div className="bg-[#2F3E2C] p-6 md:p-8 rounded-2xl text-white flex items-center justify-between">
                 <div>
                   <h4 className="text-base font-bold mb-0.5">
                     Maintenance Mode
@@ -898,7 +932,7 @@ export default function AdminSettings() {
                     }`}
                   />
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 

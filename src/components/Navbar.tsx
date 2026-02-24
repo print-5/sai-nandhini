@@ -237,7 +237,9 @@ export default function Navbar() {
                     href={
                       session.user.role === "admin"
                         ? "/admin/dashboard"
-                        : "/orders"
+                        : session.user.role === "customer"
+                          ? "/orders"
+                          : "/login"
                     }
                     className="p-2 text-white/70 hover:text-[#C6A75E] transition-colors"
                   >

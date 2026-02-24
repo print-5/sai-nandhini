@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import {
   Plus,
   Search,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ProductModal from "@/components/admin/ProductModal";
+import ConfirmationModal from "@/components/admin/ConfirmationModal";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -28,6 +30,7 @@ export default function AdminProductsPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [threshold, setThreshold] = useState(10);
   const [manageInventory, setManageInventory] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const fetchProducts = async () => {
     try {
@@ -41,6 +44,7 @@ export default function AdminProductsPage() {
       }
     } catch (err) {
       console.error("Failed to fetch products", err);
+      toast.error("Failed to load products.");
       setProducts([]);
     } finally {
       setLoading(false);
@@ -75,23 +79,36 @@ export default function AdminProductsPage() {
       });
 
       if (res.ok) {
+        toast.success(editingProduct ? "Product updated!" : "Product created!");
         fetchProducts();
+        setIsModalOpen(false); // Close modal on successful save
+      } else {
+        toast.error("Failed to save product");
       }
     } catch (err) {
       console.error("Failed to save product", err);
+      toast.error("An error occurred while saving");
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
 
     try {
-      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/products/${deleteId}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
+        toast.success("Product deleted successfully");
         fetchProducts();
+      } else {
+        toast.error("Failed to delete product");
       }
     } catch (err) {
       console.error("Failed to delete product", err);
+      toast.error("An error occurred while deleting");
+    } finally {
+      setDeleteId(null); // Close confirmation modal
     }
   };
 
@@ -396,7 +413,7 @@ export default function AdminProductsPage() {
                         <Edit2 size={18} />
                       </button>
                       <button
-                        onClick={() => handleDelete(p._id)}
+                        onClick={() => setDeleteId(p._id)}
                         className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors border border-transparent hover:border-red-100" // Red action for delete needs to signal caution
                       >
                         <Trash2 size={18} />
@@ -415,6 +432,16 @@ export default function AdminProductsPage() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSave}
         product={editingProduct}
+      />
+
+      <ConfirmationModal
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={() => handleDelete()}
+        title="Delete Product"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        confirmText="Confirm Delete"
+        type="danger"
       />
     </div>
   );

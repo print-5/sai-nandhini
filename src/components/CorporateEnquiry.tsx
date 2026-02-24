@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Send, Users, Calendar, Briefcase, CheckCircle2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function CorporateEnquiry() {
   const [formData, setFormData] = useState({
@@ -29,6 +30,7 @@ export default function CorporateEnquiry() {
 
       if (res.ok) {
         setSuccess(true);
+        toast.success("Enquiry sent successfully!");
         setFormData({
           name: "",
           email: "",
@@ -37,9 +39,12 @@ export default function CorporateEnquiry() {
           message: "",
           date: "",
         });
+      } else {
+        toast.error("Failed to send enquiry. Please try again.");
       }
     } catch (error) {
       console.error(error);
+      toast.error("An unexpected error occurred.");
     } finally {
       setLoading(false);
     }

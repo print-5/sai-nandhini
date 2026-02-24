@@ -18,6 +18,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import ImageUpload from "@/components/admin/ImageUpload";
+import toast from "react-hot-toast";
+import ConfirmationModal from "@/components/admin/ConfirmationModal";
 
 /* ────────────────────────────────────────────── */
 /*  Types                                         */
@@ -66,6 +68,7 @@ export default function HeroSlidesPage() {
   const [saving, setSaving] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   /* ── Fetch Slides ── */
   useEffect(() => {
@@ -105,7 +108,7 @@ export default function HeroSlidesPage() {
   const handleSave = async () => {
     if (!editingSlide) return;
     if (!editingSlide.title || !editingSlide.image) {
-      alert("Title and Image are required");
+      toast.error("Title and Image are required");
       return;
     }
 
@@ -117,26 +120,38 @@ export default function HeroSlidesPage() {
         : `/api/admin/hero-slides/${editingSlide._id}`;
       const method = isNew ? "POST" : "PUT";
 
+      const formData = new FormData();
+      Object.entries(editingSlide).forEach(([key, value]) => {
+        if (key === "image") {
+          if (value instanceof File) {
+            formData.append("file", value);
+          } else {
+            formData.append("image", String(value));
+          }
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingSlide),
+        body: formData,
       });
 
       if (res.ok) {
         const json = await res.json();
         if (json.success) {
-          setMessage(isNew ? "Slide created!" : "Slide updated!");
-          setTimeout(() => setMessage(""), 3000);
+          toast.success(isNew ? "Slide created!" : "Slide updated!");
           await fetchSlides();
           closeEditor();
         }
       } else {
         const err = await res.json();
-        alert(err.message || "Failed to save");
+        toast.error(err.message || "Failed to save");
       }
     } catch (e) {
       console.error(e);
+      toast.error("An error occurred while saving");
     } finally {
       setSaving(null);
     }
@@ -144,20 +159,20 @@ export default function HeroSlidesPage() {
 
   /* ── Delete ── */
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this slide? This action cannot be undone.")) return;
-
     setSaving(id);
     try {
       const res = await fetch(`/api/admin/hero-slides/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
-        setMessage("Slide deleted");
-        setTimeout(() => setMessage(""), 3000);
+        toast.success("Slide deleted successfully");
         setSlides(slides.filter((s) => s._id !== id));
+      } else {
+        toast.error("Failed to delete slide");
       }
     } catch (e) {
       console.error(e);
+      toast.error("An error occurred while deleting");
     } finally {
       setSaving(null);
     }
@@ -286,7 +301,7 @@ export default function HeroSlidesPage() {
                       <Pencil size={16} />
                     </button>
                     <button
-                      onClick={() => handleDelete(slide._id!)}
+                      onClick={() => setDeleteId(slide._id!)}
                       disabled={saving === slide._id}
                       className="bg-white text-red-500 p-2.5 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-lg"
                     >
@@ -394,11 +409,9 @@ export default function HeroSlidesPage() {
                   <ImageUpload
                     label="Slide Image"
                     value={editingSlide.image || ""}
-                    onChange={(url) =>
-                      setEditingSlide({ ...editingSlide, image: url })
+                    onChange={(val) =>
+                      setEditingSlide({ ...editingSlide, image: val as any })
                     }
-                    folder="sainandhini/hero"
-                    endpoint="/api/admin/hero-slides"
                   />
 
                   {/* Title + Title Accent */}
@@ -631,6 +644,16 @@ export default function HeroSlidesPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <ConfirmationModal
+          isOpen={!!deleteId}
+          onClose={() => setDeleteId(null)}
+          onConfirm={() => deleteId && handleDelete(deleteId)}
+          title="Delete Slide"
+          message="Are you sure you want to delete this hero slide? This action cannot be undone."
+          confirmText="Delete Now"
+          type="danger"
+        />
       </div>
     </div>
   );

@@ -1,24 +1,31 @@
 "use client";
 
-import { Leaf, ShieldCheck, Zap, Truck, Sparkles, Heart } from "lucide-react";
+import { Leaf, ShieldCheck, Zap, Truck } from "lucide-react";
 
 export default function TrustBadges() {
     const badges = [
-        { icon: Leaf, label: "100% Organic", desc: "No Chemicals" },
-        { icon: ShieldCheck, label: "Preservative Free", desc: "Pure Ingredients" },
-        { icon: Zap, label: "Freshly Baked", desc: "Baked Daily" },
-        { icon: Truck, label: "Same Day Delivery", desc: "Chennai Local" }
+        { icon: Leaf, label: "100% Organic", desc: "Certified ingredients", color: "green" },
+        { icon: ShieldCheck, label: "Preservative Free", desc: "Pure & natural", color: "blue" },
+        { icon: Zap, label: "Freshly Baked", desc: "Made daily", color: "yellow" },
+        { icon: Truck, label: "Same Day Delivery", desc: "Fast & reliable", color: "purple" }
     ];
 
+    const colorClasses = {
+        green: "bg-green-50 text-green-600 group-hover:bg-green-600",
+        blue: "bg-blue-50 text-blue-600 group-hover:bg-blue-600",
+        yellow: "bg-yellow-50 text-yellow-600 group-hover:bg-yellow-600",
+        purple: "bg-purple-50 text-purple-600 group-hover:bg-purple-600"
+    };
+
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 my-12 border-t border-b border-primary/5 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-12 border-y border-gray-200">
             {badges.map((b, i) => (
-                <div key={i} className="flex flex-col items-center text-center group">
-                    <div className="w-14 h-14 bg-secondary/30 rounded-2xl flex items-center justify-center text-primary-dark mb-3 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
-                        <b.icon size={24} strokeWidth={1.5} />
+                <div key={i} className="flex flex-col items-center text-center group cursor-default">
+                    <div className={`w-16 h-16 ${colorClasses[b.color as keyof typeof colorClasses]} rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:text-white shadow-sm`}>
+                        <b.icon size={28} strokeWidth={1.5} />
                     </div>
-                    <h4 className="text-[10px] font-sans font-black uppercase tracking-widest text-primary-dark mb-1">{b.label}</h4>
-                    <p className="text-[9px] text-primary/40 font-sans font-bold uppercase tracking-tight">{b.desc}</p>
+                    <h4 className="text-sm font-bold text-primary-dark mb-1">{b.label}</h4>
+                    <p className="text-xs text-gray-500">{b.desc}</p>
                 </div>
             ))}
         </div>

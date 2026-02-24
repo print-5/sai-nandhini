@@ -14,6 +14,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -34,6 +35,7 @@ export default function AdminCustomersPage() {
         }
       } catch (err) {
         console.error(err);
+        toast.error("Failed to load customer database.");
         setCustomers([]);
       } finally {
         setLoading(false);

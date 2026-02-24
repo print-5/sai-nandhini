@@ -10,9 +10,9 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const categoryId = searchParams.get("categoryId");
 
-    const query = categoryId ? { category: categoryId } : {};
+    const query = categoryId ? { parentCategory: categoryId } : {};
     const subCategories = await SubCategory.find(query).populate(
-      "category",
+      "parentCategory",
       "name",
     );
 

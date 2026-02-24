@@ -40,33 +40,31 @@ export async function POST(req: Request) {
       imageUrl = body.image;
     } else {
       const formData = await req.formData();
-      const file = formData.get("file") as File;
+      name = formData.get("name") as string;
+      slug = formData.get("slug") as string;
+      description = formData.get("description") as string;
 
-      // Standalone upload for ImageUpload component
-      if (file && !formData.get("name")) {
+      const file = formData.get("file") as File;
+      const existingImage = formData.get("image") as string;
+
+      if (file && file instanceof File) {
         const buffer = Buffer.from(await file.arrayBuffer());
         const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
         const result = await uploadToCloudinary(
           base64Image,
           "sainandhini/categories",
         );
-        return NextResponse.json(result);
+        imageUrl = result.secure_url;
+      } else if (existingImage) {
+        imageUrl = existingImage;
       }
+    }
 
-      name = formData.get("name") as string;
-      slug = formData.get("slug") as string;
-      description = formData.get("description") as string;
-      const imageFile = formData.get("image") as File;
-
-      if (imageFile && imageFile instanceof File) {
-        const buffer = Buffer.from(await imageFile.arrayBuffer());
-        const base64Image = `data:${imageFile.type};base64,${buffer.toString("base64")}`;
-        const { secure_url } = await uploadToCloudinary(
-          base64Image,
-          "sainandhini/categories",
-        );
-        imageUrl = secure_url;
-      }
+    if (!name || !slug) {
+      return NextResponse.json(
+        { error: "Name and Slug are required" },
+        { status: 400 },
+      );
     }
 
     const existing = await Category.findOne({ slug });

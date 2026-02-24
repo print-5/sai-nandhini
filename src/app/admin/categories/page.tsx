@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
+import toast from "react-hot-toast";
+import ConfirmationModal from "@/components/admin/ConfirmationModal";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -22,11 +24,14 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
 
   const [newCategory, setNewCategory] = useState("");
-  const [newCategoryImage, setNewCategoryImage] = useState("");
+  const [newCategoryImage, setNewCategoryImage] = useState<string | File>("");
   const [newSubCategory, setNewSubCategory] = useState({
     name: "",
     parentId: "",
   });
+  const [deleteCatId, setDeleteCatId] = useState<string | null>(null);
+  const [deleteSubId, setDeleteSubId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -39,6 +44,7 @@ export default function CategoriesPage() {
       setCategories(await catRes.json());
     } catch (error) {
       console.error(error);
+      toast.error("Failed to load categories.");
     } finally {
       setLoading(false);
     }
@@ -46,10 +52,12 @@ export default function CategoriesPage() {
 
   const fetchSubCategories = async (catId: string) => {
     try {
-      const res = await fetch(`/api/admin/subcategories?category=${catId}`);
-      setSubCategories(await res.json());
+      const res = await fetch(`/api/admin/subcategories?categoryId=${catId}`);
+      const json = await res.json();
+      setSubCategories(Array.isArray(json) ? json : []);
     } catch (error) {
       console.error(error);
+      setSubCategories([]);
     }
   };
 
@@ -60,26 +68,63 @@ export default function CategoriesPage() {
 
     const slug = newCategory
       .toLowerCase()
+      .trim()
       .replace(/ /g, "-")
       .replace(/[^\w-]+/g, "");
 
     try {
+      const formData = new FormData();
+      formData.append("name", newCategory);
+      formData.append("slug", slug);
+
+      if (newCategoryImage instanceof File) {
+        formData.append("file", newCategoryImage);
+      } else {
+        formData.append("image", newCategoryImage);
+      }
+
       const res = await fetch("/api/admin/categories", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newCategory,
-          slug,
-          image: newCategoryImage,
-        }),
+        body: formData,
       });
+
       if (res.ok) {
+        toast.success("Category added successfully");
         setNewCategory("");
         setNewCategoryImage("");
         fetchData();
+      } else {
+        toast.error("Failed to add category");
       }
     } catch (error) {
       console.error(error);
+      toast.error("An error occurred");
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!deleteCatId) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/categories?id=${deleteCatId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast.success("Category deleted");
+        fetchData();
+        if (newSubCategory.parentId === deleteCatId) {
+          setNewSubCategory({ ...newSubCategory, parentId: "" });
+          setSubCategories([]);
+        }
+      } else {
+        toast.error("Failed to delete category");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred");
+    } finally {
+      setDeleting(false);
+      setDeleteCatId(null);
     }
   };
 
@@ -95,11 +140,37 @@ export default function CategoriesPage() {
         }),
       });
       if (res.ok) {
+        toast.success("Sub-category added");
         setNewSubCategory({ ...newSubCategory, name: "" });
         fetchSubCategories(newSubCategory.parentId);
+      } else {
+        toast.error("Failed to add sub-category");
       }
     } catch (error) {
       console.error(error);
+      toast.error("An error occurred");
+    }
+  };
+
+  const handleDeleteSubCategory = async () => {
+    if (!deleteSubId) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/subcategories?id=${deleteSubId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast.success("Sub-category deleted");
+        fetchSubCategories(newSubCategory.parentId);
+      } else {
+        toast.error("Failed to delete sub-category");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred");
+    } finally {
+      setDeleting(false);
+      setDeleteSubId(null);
     }
   };
 
@@ -160,9 +231,7 @@ export default function CategoriesPage() {
                   {/* Image Upload Area */}
                   <ImageUpload
                     value={newCategoryImage}
-                    onChange={(url) => setNewCategoryImage(url)}
-                    folder="sainandhini/categories"
-                    endpoint="/api/admin/categories"
+                    onChange={(val) => setNewCategoryImage(val)}
                   />
 
                   {(!newCategory || !newCategoryImage) && (
@@ -206,10 +275,21 @@ export default function CategoriesPage() {
                           {cat.name}
                         </span>
                       </div>
-                      <ChevronRight
-                        size={16}
-                        className={`transition-transform shrink-0 ${newSubCategory.parentId === cat._id ? "text-white rotate-90" : "text-gray-300"}`}
-                      />
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteCatId(cat._id);
+                          }}
+                          className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <ChevronRight
+                          size={16}
+                          className={`transition-transform shrink-0 ${newSubCategory.parentId === cat._id ? "text-white rotate-90" : "text-gray-300"}`}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -280,7 +360,10 @@ export default function CategoriesPage() {
                               <span className="font-bold text-[#2F3E2C]">
                                 {sub.name}
                               </span>
-                              <button className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-300 hover:text-red-500 hover:shadow-sm transition-all opacity-0 group-hover:opacity-100">
+                              <button
+                                onClick={() => setDeleteSubId(sub._id)}
+                                className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-300 hover:text-red-500 hover:shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                              >
                                 <Trash2 size={14} />
                               </button>
                             </motion.div>
@@ -305,6 +388,26 @@ export default function CategoriesPage() {
           </motion.div>
         </AnimatePresence>
       )}
+
+      <ConfirmationModal
+        isOpen={!!deleteCatId}
+        onClose={() => setDeleteCatId(null)}
+        onConfirm={handleDeleteCategory}
+        title="Delete Category"
+        message="Are you sure you want to delete this category? All its sub-categories will be affected."
+        confirmText="Delete Category"
+        type="danger"
+      />
+
+      <ConfirmationModal
+        isOpen={!!deleteSubId}
+        onClose={() => setDeleteSubId(null)}
+        onConfirm={handleDeleteSubCategory}
+        title="Delete Sub-Category"
+        message="Are you sure you want to delete this sub-category?"
+        confirmText="Delete"
+        type="danger"
+      />
     </div>
   );
 }

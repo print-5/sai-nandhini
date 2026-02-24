@@ -23,6 +23,17 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
 
 interface DashboardData {
   stats: {
@@ -274,54 +285,66 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="relative h-64 w-full flex items-end justify-between gap-4 px-4">
-              {data.salesTrend.map((p, i) => {
-                const maxVal =
-                  Math.max(...data.salesTrend.map((d) => d.amount)) || 1;
-                const heightPercentage = (p.amount / maxVal) * 100;
-
-                return (
-                  <div
-                    key={i}
-                    className="relative flex flex-col justify-end items-center h-full flex-1 group"
-                  >
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#2F3E2C] text-white p-3 rounded-xl shadow-2xl text-center z-50 pointer-events-none whitespace-nowrap min-w-[120px]">
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#C6A75E] mb-1">
-                        {p.date}
-                      </p>
-                      <div className="space-y-1">
-                        <div className="pt-1 mt-1 border-t border-white/10 flex justify-between gap-4 text-[11px]">
-                          <span className="text-white uppercase font-black">
-                            Total
-                          </span>
-                          <span className="font-black">
-                            {formatCurrency(p.amount)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#2F3E2C]" />
-                    </div>
-
-                    {/* Bar */}
-                    <div className="w-full max-w-[32px] flex flex-col justify-end h-full">
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: `${heightPercentage}%` }}
-                        transition={{ duration: 0.8, delay: i * 0.05 }}
-                        className="w-full bg-[#C6A75E] rounded-t-sm transition-all group-hover:brightness-110"
-                      />
-                      {/* Base line */}
-                      <div className="w-full h-[1px] bg-gray-100 shrink-0" />
-                    </div>
-
-                    {/* X Axis Label */}
-                    <span className="text-[9px] font-black text-gray-300 uppercase tracking-tighter mt-3 absolute -bottom-6">
-                      {p.date}
-                    </span>
-                  </div>
-                );
-              })}
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={data.salesTrend}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#C6A75E" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#C6A75E" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#F1F1F1"
+                  />
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fontWeight: 700, fill: "#9CA3AF" }}
+                    dy={10}
+                  />
+                  <YAxis hide domain={[0, "auto"]} />
+                  <RechartsTooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-[#2F3E2C] text-white p-3 rounded-xl shadow-2xl border border-white/10">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[#C6A75E] mb-1">
+                              {payload[0].payload.date}
+                            </p>
+                            <div className="flex justify-between gap-4 text-xs font-bold">
+                              <span>Revenue:</span>
+                              <span>
+                                {formatCurrency(payload[0].value as number)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between gap-4 text-[10px] text-white/60 mt-0.5">
+                              <span>Orders:</span>
+                              <span>{payload[0].payload.orders}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="#C6A75E"
+                    strokeWidth={4}
+                    fillOpacity={1}
+                    fill="url(#colorRev)"
+                    animationDuration={1500}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
 

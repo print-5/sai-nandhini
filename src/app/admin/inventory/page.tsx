@@ -17,6 +17,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -82,8 +83,10 @@ export default function InventoryPage() {
   };
 
   const handleSubmit = async () => {
-    if (!quantity || isNaN(Number(quantity)))
-      return alert("Please enter a valid quantity");
+    if (!quantity || isNaN(Number(quantity))) {
+      toast.error("Please enter a valid quantity");
+      return;
+    }
 
     setFormLoading(true);
     try {
@@ -114,11 +117,13 @@ export default function InventoryPage() {
         setReason("");
         setCost("");
         setSupplier("");
+        toast.success("Inventory updated successfully");
       } else {
-        alert("Failed to update stock");
+        toast.error("Failed to update stock");
       }
     } catch (err) {
       console.error(err);
+      toast.error("An error occurred");
     } finally {
       setFormLoading(false);
     }

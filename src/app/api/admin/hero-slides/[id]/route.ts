@@ -10,7 +10,6 @@ import {
   getPublicIdFromUrl,
 } from "@/lib/cloudinary";
 
-/* ────────── PUT — update a slide ────────── */
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -22,7 +21,6 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await req.json();
     await connectDB();
 
     const existing = await HeroSlide.findById(id);
@@ -33,36 +31,32 @@ export async function PUT(
       );
     }
 
-    // Handle image changes
-    let imageValue: string | undefined;
-    if (body.image) {
-      const imgData = body.image;
+    const formData = await req.formData();
+    const updateData: any = {};
 
-      if (imgData.startsWith("data:image")) {
-        // New base64 image → upload to Cloudinary
-        // Delete old Cloudinary image first
-        if (existing.image && !existing.image.startsWith("http")) {
-          await deleteFromCloudinary(existing.image);
-        }
-
-        const result = await uploadToCloudinary(
-          imgData,
-          "sainandhini/images/hero",
-        );
-        imageValue = result.public_id;
-      } else if (imgData.startsWith("http")) {
-        // Direct URL — extract public_id if Cloudinary, else store URL as-is
-        const publicId = getPublicIdFromUrl(imgData);
-        imageValue = publicId || imgData;
+    // Extract fields from FormData
+    formData.forEach((value, key) => {
+      if (key !== "file") {
+        if (key === "isActive") updateData[key] = value === "true";
+        else if (key === "order") updateData[key] = Number(value);
+        else updateData[key] = value;
       }
-    }
+    });
 
-    // Build update object
-    const updateData: any = { ...body };
-    if (imageValue !== undefined) {
-      updateData.image = imageValue;
-    } else {
-      delete updateData.image; // Keep existing image
+    const file = formData.get("file") as File;
+    if (file && file instanceof File) {
+      // New file → delete old and upload
+      if (existing.image && !existing.image.startsWith("http")) {
+        await deleteFromCloudinary(existing.image);
+      }
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
+      const result = await uploadToCloudinary(base64Image, "sainandhini/hero");
+      updateData.image = result.public_id;
+    } else if (updateData.image && updateData.image.startsWith("http")) {
+      // Normalize URL to publicId if it's Cloudinary
+      const publicId = getPublicIdFromUrl(updateData.image);
+      updateData.image = publicId || updateData.image;
     }
 
     const slide = await HeroSlide.findByIdAndUpdate(id, updateData, {
@@ -82,7 +76,6 @@ export async function PUT(
       },
     });
   } catch (error: any) {
-    console.error("PUT hero-slides error:", error);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 },
@@ -90,7 +83,6 @@ export async function PUT(
   }
 }
 
-/* ────────── DELETE — remove a slide ────────── */
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -103,28 +95,20 @@ export async function DELETE(
 
     const { id } = await params;
     await connectDB();
-
     const slide = await HeroSlide.findById(id);
-    if (!slide) {
+    if (!slide)
       return NextResponse.json(
         { success: false, message: "Slide not found" },
         { status: 404 },
       );
-    }
 
-    // Delete from Cloudinary if it's a public_id
     if (slide.image && !slide.image.startsWith("http")) {
       await deleteFromCloudinary(slide.image);
     }
 
     await HeroSlide.findByIdAndDelete(id);
-
-    return NextResponse.json({
-      success: true,
-      message: "Slide deleted",
-    });
+    return NextResponse.json({ success: true, message: "Slide deleted" });
   } catch (error: any) {
-    console.error("DELETE hero-slides error:", error);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 },

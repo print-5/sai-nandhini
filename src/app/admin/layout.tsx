@@ -21,8 +21,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ImageIcon,
+  Star,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Toaster } from "react-hot-toast";
 
 export default function AdminLayout({
   children,
@@ -87,16 +89,36 @@ export default function AdminLayout({
     { href: "/admin/categories", label: "Categories", icon: LayoutGrid },
     { href: "/admin/uom", label: "UOM Master", icon: Scale },
     { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+    { href: "/admin/reviews", label: "Product Reviews", icon: Star },
     { href: "/admin/coupons", label: "Promo Codes", icon: Ticket },
 
     { href: "/admin/customers", label: "Customer Base", icon: Users },
-    // { href: "/admin/analytics", label: "Business Insights", icon: BarChart3 },
+    { href: "/admin/analytics", label: "Business Insights", icon: BarChart3 },
     { href: "/admin/enquiries", label: "Event Enquiries", icon: ClipboardList },
     { href: "/admin/legal", label: "Legal Pages", icon: FileText },
   ];
 
   return (
     <div className="flex h-screen bg-[#F8F6F2] font-sans overflow-hidden">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#2F3E2C",
+            color: "#fff",
+            borderRadius: "16px",
+            fontSize: "14px",
+            fontWeight: "600",
+            padding: "16px",
+          },
+          success: {
+            iconTheme: {
+              primary: "#C6A75E",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
       {/* Premium Sidebar */}
       <motion.aside
         initial={false}

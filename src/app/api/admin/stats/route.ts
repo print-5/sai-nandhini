@@ -7,8 +7,11 @@ import Settings from "@/models/Settings";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const range = searchParams.get("range") || "week";
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -82,12 +85,16 @@ export async function GET() {
       .select("name stock uom image")
       .limit(5);
 
-    // 2. Sales Overview (Last 7 Days) with IST Timezone Split
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 6);
+    // 2. Sales Overview based on range
+    let days = 7;
+    if (range === "today") days = 1;
+    if (range === "month") days = 30;
+
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - (days - 1));
 
     const salesTrend = await Order.aggregate([
-      { $match: { isPaid: true, createdAt: { $gte: sevenDaysAgo } } },
+      { $match: { isPaid: true, createdAt: { $gte: startDate } } },
       {
         $group: {
           _id: {
@@ -106,9 +113,9 @@ export async function GET() {
 
     // Fill in missing days for the chart
     const chartData = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(sevenDaysAgo);
-      date.setDate(sevenDaysAgo.getDate() + i);
+    for (let i = 0; i < days; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
 
       // Format to YYYY-MM-DD in IST
       const yyyy = date.getFullYear();
@@ -118,7 +125,12 @@ export async function GET() {
 
       const found = salesTrend.find((item) => item._id === dateStr);
       chartData.push({
-        date: date.toLocaleDateString("en-US", { weekday: "short" }),
+        date:
+          days === 1
+            ? date.toLocaleTimeString("en-US", { hour: "numeric" })
+            : days > 7
+              ? `${date.getDate()} ${date.toLocaleDateString("en-US", { month: "short" })}`
+              : date.toLocaleDateString("en-US", { weekday: "short" }),
         amount: found ? found.total : 0,
         orders: found ? found.count : 0,
       });

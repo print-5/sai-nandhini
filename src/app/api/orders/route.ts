@@ -9,6 +9,7 @@ import { generatePDFFromHTML } from "@/lib/pdf-generator";
 import { sendOrderConfirmationEmail } from "@/lib/email-service";
 import Product from "@/models/Product";
 import Settings from "@/models/Settings";
+import Coupon from "@/models/Coupon";
 
 export async function POST(req: Request) {
   try {
@@ -29,6 +30,8 @@ export async function POST(req: Request) {
       shippingPrice,
       discountPrice,
       totalPrice,
+      couponCode,
+      discount,
       customerId,
     } = await req.json();
 
@@ -128,10 +131,20 @@ export async function POST(req: Request) {
       taxPrice,
       shippingPrice,
       discountPrice,
+      couponCode: couponCode || null,
+      discount: discount || 0,
       totalPrice,
     });
 
     const createdOrder = await order.save();
+
+    // If coupon was used, increment usage count
+    if (couponCode) {
+      await Coupon.findOneAndUpdate(
+        { code: couponCode.toUpperCase() },
+        { $inc: { usedCount: 1 } },
+      );
+    }
 
     // If it's Cash on Delivery, send the email immediately
     if (paymentMethod === "Cash on Delivery") {
@@ -166,9 +179,14 @@ export async function GET(req: Request) {
     }
 
     await connectDB();
-    const orders = await Order.find({ user: session.user.id }).sort({
-      createdAt: -1,
-    });
+    const orders = await Order.find({ user: session.user.id })
+      .populate({
+        path: "orderItems.product",
+        select: "slug name",
+      })
+      .sort({
+        createdAt: -1,
+      });
     return NextResponse.json(orders);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
