@@ -55,12 +55,13 @@ export async function GET(
         headers: await headers(),
       });
       if (session?.user) {
+        const isAdmin = session.user.role === "admin";
         const hasBought = await Order.findOne({
           user: session.user.id,
           "orderItems.product": id,
-          status: "Delivered",
+          $or: [{ status: "Delivered" }, { isDelivered: true }],
         });
-        if (hasBought) {
+        if (hasBought || isAdmin) {
           const alreadyReviewed = await Review.findOne({
             user: session.user.id,
             product: id,

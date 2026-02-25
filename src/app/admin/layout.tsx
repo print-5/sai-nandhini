@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -22,6 +23,8 @@ import {
   ChevronRight,
   ImageIcon,
   Star,
+  Truck,
+  Database,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
@@ -139,12 +142,14 @@ export default function AdminLayout({
         <div
           className={`flex items-center gap-4 mb-8 p-6 ${isCollapsed ? "justify-center" : ""}`}
         >
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-lg shrink-0">
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-lg shrink-0 relative">
             {settings?.logo ? (
-              <img
+              <Image
                 src={settings.logo}
                 className="w-full h-full object-contain p-1"
                 alt="Logo"
+                fill
+                sizes="40px"
               />
             ) : (
               <span className="text-[#2F3E2C] font-black italic">SN</span>
@@ -204,6 +209,22 @@ export default function AdminLayout({
         </nav>
 
         <div className="p-4 border-t border-white/5 space-y-2 mt-2">
+          {/* <Link
+            href="/admin/database"
+            className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all ${
+              pathname === "/admin/database"
+                ? "bg-white/10 text-white"
+                : "hover:bg-white/5 text-white/60 hover:text-white"
+            } ${isCollapsed ? "justify-center" : ""}`}
+            title="Database Management"
+          >
+            <Database size={20} />
+            {!isCollapsed && (
+              <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                Database
+              </span>
+            )}
+          </Link> */}
           <Link
             href="/admin/hero-slides"
             className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all ${
@@ -217,6 +238,22 @@ export default function AdminLayout({
             {!isCollapsed && (
               <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
                 Hero Carousel
+              </span>
+            )}
+          </Link>
+          <Link
+            href="/admin/shipping"
+            className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all ${
+              pathname === "/admin/shipping"
+                ? "bg-white/10 text-white"
+                : "hover:bg-white/5 text-white/60 hover:text-white"
+            } ${isCollapsed ? "justify-center" : ""}`}
+            title="Shipping Management"
+          >
+            <Truck size={20} />
+            {!isCollapsed && (
+              <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                Shipping Rates
               </span>
             )}
           </Link>

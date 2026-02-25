@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Coffee, Leaf, Flame, CheckCircle2 } from "lucide-react";
 
 export default function WhyChooseUs() {
@@ -82,10 +83,12 @@ export default function WhyChooseUs() {
             className="relative group"
           >
             <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden border-4 border-white/10 shadow-2xl shadow-black/30 relative">
-              <img
+              <Image
                 src="https://images.pexels.com/photos/4686958/pexels-photo-4686958.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]"
                 alt="Our kitchen in action"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-[#2F3E2C]/10 group-hover:bg-transparent transition-colors" />
             </div>

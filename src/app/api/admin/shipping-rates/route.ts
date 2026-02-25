@@ -27,10 +27,10 @@ export async function POST(req: Request) {
     const body = await req.json();
     await connectDB();
 
-    // Ensure weights are valid numbers
-    if (body.minWeight >= body.maxWeight) {
+    // Ensure amounts are valid numbers
+    if (body.minAmount >= body.maxAmount) {
       return NextResponse.json(
-        { error: "Min weight must be less than max weight" },
+        { error: "Min amount must be less than max amount" },
         { status: 400 },
       );
     }

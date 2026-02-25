@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { X, Upload, Loader2, ChevronDown, Check, Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -469,10 +470,13 @@ export default function ProductModal({
                             key={index}
                             className="relative aspect-square rounded-2xl overflow-hidden border border-gray-100 group shadow-sm"
                           >
-                            <img
+                            <Image
                               src={displayUrl}
                               alt={`Product ${index + 1}`}
                               className="w-full h-full object-cover"
+                              fill
+                              unoptimized
+                              sizes="100px"
                             />
                             <button
                               type="button"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import {
   Plus,
   Trash2,
@@ -286,10 +287,12 @@ export default function HeroSlidesPage() {
               >
                 {/* Image */}
                 <div className="relative aspect-[16/9] overflow-hidden bg-gray-100">
-                  <img
+                  <Image
                     src={slide.image}
                     alt={slide.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
 
                   {/* Overlay actions */}

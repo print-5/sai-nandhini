@@ -59,7 +59,7 @@ export default function CouponInput({
       }
 
       const message = data.data.isFreeDelivery
-        ? "Free Delivery coupon applied!"
+        ? "Free Delivery coupon applied! Shipping charge waived."
         : `Coupon applied! You save ₹${data.data.discount}`;
 
       setSuccess(message);

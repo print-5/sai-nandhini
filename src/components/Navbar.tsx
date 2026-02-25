@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   ShoppingCart,
   User,
@@ -160,11 +161,15 @@ export default function Navbar() {
               {/* Brand Logo */}
               <Link href="/" className="flex flex-col items-center group">
                 {settings?.logo ? (
-                  <img
-                    src={settings.logo}
-                    alt={settings.shopName || "Sai Nandhini"}
-                    className="h-10 md:h-12 w-auto object-contain transition-transform group-hover:scale-105"
-                  />
+                  <div className="h-10 md:h-12 w-48 relative">
+                    <Image
+                      src={settings.logo}
+                      alt={settings.shopName || "Sai Nandhini"}
+                      fill
+                      className="object-contain transition-transform group-hover:scale-105"
+                      priority
+                    />
+                  </div>
                 ) : (
                   <>
                     <span className="text-2xl md:text-3xl font-serif font-black text-white tracking-normal leading-none group-hover:text-[#C6A75E] transition-colors">
@@ -220,7 +225,7 @@ export default function Navbar() {
                   Combos
                 </Link>
                 <Link
-                  href="/enquiry"
+                  href="/contact"
                   className="text-[13px] font-semibold text-white/80 hover:text-[#C6A75E] transition-colors"
                 >
                   Corporate Orders
@@ -291,11 +296,14 @@ export default function Navbar() {
               <div className="flex justify-between items-center mb-12">
                 <div className="flex flex-col">
                   {settings?.logo ? (
-                    <img
-                      src={settings.logo}
-                      alt={settings.shopName || "Sai Nandhini"}
-                      className="h-10 w-auto object-contain mb-2"
-                    />
+                    <div className="h-10 w-40 relative mb-2">
+                      <Image
+                        src={settings.logo}
+                        alt={settings.shopName || "Sai Nandhini"}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
                   ) : (
                     <>
                       <span className="text-xl font-serif font-black text-[#2F3E2C] tracking-tighter">
@@ -335,7 +343,7 @@ export default function Navbar() {
                     Combo Offers
                   </Link>
                   <Link
-                    href="/enquiry"
+                    href="/contact"
                     className="block text-xl font-bold text-[#2F3E2C]"
                     onClick={() => setIsMenuOpen(false)}
                   >

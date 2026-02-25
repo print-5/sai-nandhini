@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -113,31 +114,21 @@ const imageVariants = {
 /* ═══════════════════════════════════════════════════════════════
    Component
    ═══════════════════════════════════════════════════════════════ */
-export default function HeroCarousel() {
+export default function HeroCarousel({
+  initialSlides,
+}: {
+  initialSlides?: Slide[];
+}) {
   const [[currentSlide, direction], setSlide] = useState<[number, number]>([
     0, 0,
   ]);
   const [isPaused, setIsPaused] = useState(false);
-  const [slides, setSlides] = useState<Slide[]>(fallbackSlides);
+  const [slides, setSlides] = useState<Slide[]>(
+    initialSlides && initialSlides.length > 0 ? initialSlides : fallbackSlides,
+  );
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  /* ── Fetch slides from API ── */
-  useEffect(() => {
-    const fetchSlides = async () => {
-      try {
-        const res = await fetch("/api/admin/hero-slides?activeOnly=true");
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success && json.data?.length > 0) {
-            setSlides(json.data);
-          }
-        }
-      } catch {
-        /* silently fall back to defaults */
-      }
-    };
-    fetchSlides();
-  }, []);
+  /* ── Fetch slides from API (removed for RSC) ── */
 
   /* ── Auto-play ── */
   const startAutoPlay = useCallback(() => {
@@ -287,10 +278,13 @@ export default function HeroCarousel() {
             >
               <div className="relative w-full max-w-lg lg:max-w-xl mx-auto">
                 <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-black/40 border border-white/5 group">
-                  <img
+                  <Image
                     src={slide.image}
                     alt={`${slide.title} ${slide.titleAccent}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]"
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#2F3E2C]/30 via-transparent to-transparent" />
                 </div>

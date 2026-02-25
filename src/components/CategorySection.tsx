@@ -1,32 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export default function CategorySection() {
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("/api/categories");
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            setCategories(data);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
+export default function CategorySection({
+  initialCategories,
+}: {
+  initialCategories: any[];
+}) {
+  const [categories] = useState<any[]>(initialCategories);
+  const [loading] = useState(false);
 
   if (loading) return null;
   if (categories.length === 0) return null;
@@ -62,13 +48,15 @@ export default function CategorySection() {
                 href={`/shop?category=${encodeURIComponent(cat.name)}`}
                 className="group relative block h-[380px] rounded-3xl overflow-hidden shadow-lg shadow-[#2F3E2C]/5"
               >
-                <img
+                <Image
                   src={
                     cat.image ||
                     "https://images.pexels.com/photos/2062426/pexels-photo-2062426.jpeg?auto=compress&cs=tinysrgb&w=800"
                   }
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
                   alt={cat.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 />
                 {/* Glass overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2F3E2C]/90 via-[#2F3E2C]/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />

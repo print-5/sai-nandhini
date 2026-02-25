@@ -55,15 +55,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if the user has bought the product
+    const isAdmin = session.user.role === "admin";
     const hasBought = await Order.findOne({
       user: session.user.id,
       "orderItems.product": productId,
-      isPaid: true,
-      status: "Delivered",
+      $or: [{ status: "Delivered" }, { isDelivered: true }],
     });
 
-    if (!hasBought) {
+    console.log("Review Check - session.user.id:", session.user.id);
+    console.log("Review Check - role:", session.user.role);
+    console.log("Review Check - productId:", productId);
+    console.log("Review Check - hasBought:", !!hasBought);
+
+    if (!hasBought && !isAdmin) {
       return NextResponse.json(
         { error: "You can only review products you have bought and received." },
         { status: 403 },

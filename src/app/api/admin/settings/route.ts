@@ -15,6 +15,26 @@ export async function GET() {
 
     if (settings) {
       const masked = settings.toObject();
+      
+      // Migration: Convert old taxRate to taxRates array
+      if (masked.taxRate !== undefined && (!masked.taxRates || masked.taxRates.length === 0)) {
+        masked.taxRates = [
+          {
+            name: "GST",
+            rate: masked.taxRate,
+            isDefault: true,
+          },
+        ];
+        // Update in database
+        await Settings.findOneAndUpdate(
+          {},
+          { 
+            taxRates: masked.taxRates,
+            $unset: { taxRate: "" }
+          }
+        );
+      }
+      
       if (masked.payment?.razorpayKeySecret)
         masked.payment.razorpayKeySecret = MASKED;
       if (masked.smtp?.password) masked.smtp.password = MASKED;

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Star, ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -24,10 +25,10 @@ interface Product {
   }>;
 }
 
-export default function RelatedProducts({ 
-  currentId, 
-  category 
-}: { 
+export default function RelatedProducts({
+  currentId,
+  category,
+}: {
   currentId: string;
   category?: string;
 }) {
@@ -43,12 +44,12 @@ export default function RelatedProducts({
           limit: "4",
           exclude: currentId,
         });
-        
+
         // Add category filter if available
         if (category) {
           params.append("category", category);
         }
-        
+
         const res = await fetch(`/api/products?${params.toString()}`);
         if (res.ok) {
           const data = await res.json();
@@ -121,10 +122,12 @@ export default function RelatedProducts({
               <Link href={`/shop/${p.slug}`}>
                 <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-secondary/10 mb-6 relative border border-primary/5">
                   {p.images?.[0] ? (
-                    <img
+                    <Image
                       src={p.images[0]}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s]"
                       alt={p.name}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100">

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { ArrowRight, Sparkles, Shield, Truck } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -31,10 +32,13 @@ export default function Hero() {
     <section className="relative min-h-[100vh] flex items-center overflow-hidden bg-[#2F3E2C]">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
+        <Image
           src={banner}
           className="w-full h-full object-cover opacity-40"
           alt="Authentic Indian food spread"
+          fill
+          priority
+          sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#2F3E2C] via-[#2F3E2C]/85 to-[#2F3E2C]/40" />
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#2F3E2C] to-transparent" />

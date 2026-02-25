@@ -16,6 +16,10 @@ export async function GET(req: Request) {
 
     const query: any = category ? { category } : {};
 
+    if (!isAdmin) {
+      query.isActive = true;
+    }
+
     // Exclude specific product (for related products)
     if (exclude) {
       query._id = { $ne: exclude };
@@ -35,7 +39,7 @@ export async function GET(req: Request) {
     }
 
     let productsQuery = Product.find(query);
-    
+
     // Apply limit if specified
     if (limit) {
       productsQuery = productsQuery.limit(parseInt(limit));

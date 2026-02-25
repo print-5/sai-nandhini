@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
-import Order from "@/models/Order";
+import { getCustomersWithStats, getCustomerByPhone } from "@/lib/admin-data";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -15,41 +13,17 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await connectDB();
-
     const { searchParams } = new URL(req.url);
     const phone = searchParams.get("phone");
 
     if (phone) {
-      const customer = await User.findOne({
-        phone,
-        role: { $in: ["customer", "user"] },
-      }).select("-password");
+      const customer = await getCustomerByPhone(phone);
       if (!customer) return NextResponse.json(null);
       return NextResponse.json(customer);
     }
 
     // Get all customers (and standard users)
-    const customers = await User.find({ role: { $in: ["customer", "user"] } })
-      .select("-password")
-      .sort({ createdAt: -1 });
-
-    // Get order stats for each customer
-    const customersWithStats = await Promise.all(
-      customers.map(async (customer) => {
-        const orders = await Order.find({ user: customer._id });
-        const totalSpent = orders.reduce(
-          (sum, order) => sum + (order.isPaid ? order.totalPrice : 0),
-          0,
-        );
-        return {
-          ...customer.toObject(),
-          orderCount: orders.length,
-          totalSpent,
-        };
-      }),
-    );
-
+    const customersWithStats = await getCustomersWithStats();
     return NextResponse.json(customersWithStats);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

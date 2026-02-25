@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import {
   Search,
   Filter,
@@ -212,11 +213,14 @@ export default function InventoryPage() {
                   onClick={() => handleManageStock(p)}
                   className="group bg-white rounded-[20px] p-5 border border-gray-100 hover:border-[#C6A75E]/30 hover:shadow-lg hover:shadow-[#C6A75E]/5 transition-all duration-300 cursor-pointer flex flex-col md:flex-row items-center gap-6 relative overflow-hidden"
                 >
-                  <div className="w-full md:w-16 h-16 bg-[#F8F6F2] rounded-2xl overflow-hidden shrink-0">
+                  <div className="w-full md:w-16 h-16 bg-[#F8F6F2] rounded-2xl overflow-hidden shrink-0 relative">
                     {p.images?.[0] ? (
-                      <img
+                      <Image
                         src={p.images[0]}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                        alt={p.name}
+                        fill
+                        sizes="64px"
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full text-gray-300">

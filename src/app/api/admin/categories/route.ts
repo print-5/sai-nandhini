@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Category from "@/models/Category";
+import { getCategoriesData } from "@/lib/admin-data";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function GET() {
   try {
-    await connectDB();
-    const categories = await Category.find({ isActive: true }).sort({
-      order: 1,
-    });
+    const categories = await getCategoriesData();
     return NextResponse.json(categories);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -82,6 +80,52 @@ export async function POST(req: Request) {
       description,
     });
     return NextResponse.json(category, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || (session.user as any).role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 },
+      );
+    }
+
+    await connectDB();
+
+    // Delete the category
+    const deletedCategory = await Category.findByIdAndDelete(id);
+
+    if (!deletedCategory) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 },
+      );
+    }
+
+    // Also delete associated subcategories (you would need to import SubCategory if it's not already, but we can do it via mongoose model)
+    const mongoose = require("mongoose");
+    const SubCategory =
+      mongoose.models.SubCategory || mongoose.model("SubCategory");
+    if (SubCategory) {
+      await SubCategory.deleteMany({ parentCategory: id });
+    }
+
+    return NextResponse.json({ message: "Category deleted successfully" });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

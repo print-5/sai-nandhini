@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,10 +25,12 @@ export default function AboutUs() {
             className="relative"
           >
             <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-[#2F3E2C]/10 border-4 border-white">
-              <img
+              <Image
                 src="https://images.pexels.com/photos/3983674/pexels-photo-3983674.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
                 alt="Our Chef Baking"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
               />
               {/* Floating Badge */}
               <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-lg max-w-[180px] border border-white/50">

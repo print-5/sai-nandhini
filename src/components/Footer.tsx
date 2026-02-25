@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Instagram,
   Facebook,
@@ -53,11 +54,14 @@ export default function Footer() {
             <div className="space-y-5">
               <Link href="/">
                 {settings?.logo ? (
-                  <img
-                    src={settings.logo}
-                    alt={settings.shopName || "Sai Nandhini"}
-                    className="h-12 w-auto object-contain mb-4"
-                  />
+                  <div className="h-12 w-48 relative mb-4">
+                    <Image
+                      src={settings.logo}
+                      alt={settings.shopName || "Sai Nandhini"}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 ) : (
                   <h2 className="text-3xl font-serif font-black text-white tracking-wide">
                     {settings?.shopName || "Sai Nandhini"}
@@ -167,11 +171,11 @@ export default function Footer() {
               </h4>
               <ul className="space-y-3 mb-8">
                 {[
-                  { name: "Customizable Packs", link: "/enquiry" },
-                  { name: "Personalized Branding", link: "/enquiry" },
-                  { name: "Bulk Orders", link: "/enquiry" },
-                  { name: "Corporate Gifting", link: "/enquiry" },
-                  { name: "Event Gifting", link: "/enquiry" },
+                  { name: "Customizable Packs", link: "/contact" },
+                  { name: "Personalized Branding", link: "/contact" },
+                  { name: "Bulk Orders", link: "/contact" },
+                  { name: "Corporate Gifting", link: "/contact" },
+                  { name: "Event Gifting", link: "/contact" },
                 ].map((item) => (
                   <li key={item.name}>
                     <Link
@@ -214,7 +218,7 @@ export default function Footer() {
           <div className="flex flex-wrap justify-center gap-4 mb-12">
             {[
               { label: "Order Now", link: "/shop" },
-              { label: "Bulk Enquiry", link: "/enquiry" },
+              { label: "Bulk Enquiry", link: "/contact" },
               { label: "Special Offers", link: "/offers" },
             ].map((btn) => (
               <Link

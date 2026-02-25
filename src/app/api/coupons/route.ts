@@ -14,9 +14,11 @@ export async function GET() {
     const activeCoupons = await Coupon.find({
       isActive: true,
       displayInCheckout: true,
-      $or: [{ expiryDate: { $exists: false } }, { expiryDate: { $gt: now } }],
+      $or: [{ expiresAt: { $exists: false } }, { expiresAt: { $gt: now } }],
     })
-      .select("code type value description minOrderAmount maxDiscountAmount")
+      .select(
+        "code discountType discountValue description minOrderValue maxDiscountAmount",
+      )
       .sort({ createdAt: -1 });
 
     return NextResponse.json({ success: true, data: activeCoupons });

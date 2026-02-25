@@ -17,6 +17,7 @@ const ProductSchema = new Schema({
     rating: { type: Number, default: 5 },
     numReviews: { type: Number, default: 0 },
     isFeatured: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
     isCodAvailable: { type: Boolean, default: true },
     badge: { type: String },
     uom: { type: String, default: "pcs" }, // Legacy support

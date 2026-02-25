@@ -3,11 +3,58 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Phone, Mail, Send, MessageSquare } from "lucide-react";
+import { MapPin, Phone, Mail, Send, MessageSquare, Users, Calendar, Briefcase } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function ContactPage() {
+  const [activeTab, setActiveTab] = useState<"general" | "corporate">("general");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    type: "General Inquiry",
+    message: "",
+    date: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        toast.success("Message sent successfully! We'll get back to you soon.");
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          company: "",
+          type: activeTab === "general" ? "General Inquiry" : "Corporate Booking",
+          message: "",
+          date: "",
+        });
+      } else {
+        toast.error("Failed to send message. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gradient-to-b from-white to-secondary/30">
       <Navbar />
 
       <div className="pt-48 pb-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,10 +70,18 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-6xl md:text-8xl font-serif font-bold text-primary-dark"
+            className="text-5xl md:text-7xl font-serif font-bold text-primary-dark"
           >
             How Can We <span className="text-primary italic">Help?</span>
           </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-gray-500 mt-6 max-w-2xl mx-auto font-medium"
+          >
+            Whether you have a question, feedback, or need bulk orders for your event, we're here to assist you.
+          </motion.p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
@@ -71,17 +126,29 @@ export default function ContactPage() {
               </motion.div>
             ))}
 
-            <div className="bg-primary-dark p-10 rounded-[3rem] text-white relative overflow-hidden">
+            {/* Corporate Services Info */}
+            <div className="bg-primary-dark p-8 rounded-[2.5rem] text-white relative overflow-hidden">
               <MessageSquare className="absolute -bottom-4 -right-4 w-32 h-32 text-white/5" />
               <h3 className="text-xl font-serif font-bold mb-4">
-                Bulk Orders?
+                Corporate & Events
               </h3>
-              <p className="text-primary-light text-sm font-medium mb-6">
-                Planning a wedding or a corporate event? We handle bulk orders
-                with custom branding.
-              </p>
-              <button className="text-xs font-bold uppercase tracking-widest text-accent hover:underline">
-                Connect with Sales →
+              <div className="space-y-3 mb-6">
+                {[
+                  { icon: Briefcase, text: "Corporate Gifting" },
+                  { icon: Users, text: "Large Gatherings" },
+                  { icon: Calendar, text: "Festival Specials" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm">
+                    <item.icon size={16} className="text-accent" />
+                    <span className="text-primary-light font-medium">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setActiveTab("corporate")}
+                className="text-xs font-bold uppercase tracking-widest text-accent hover:underline"
+              >
+                Request Quote →
               </button>
             </div>
           </div>
@@ -92,61 +159,159 @@ export default function ContactPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="bg-white p-12 rounded-[3.5rem] shadow-xl border border-gray-100"
+              className="bg-white p-8 md:p-12 rounded-[3.5rem] shadow-xl border border-gray-100"
             >
-              <form className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Tab Switcher */}
+              <div className="flex gap-4 mb-8 p-2 bg-gray-50 rounded-2xl">
+                <button
+                  onClick={() => {
+                    setActiveTab("general");
+                    setFormData({ ...formData, type: "General Inquiry" });
+                  }}
+                  className={`flex-1 py-4 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${
+                    activeTab === "general"
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
+                >
+                  General Inquiry
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab("corporate");
+                    setFormData({ ...formData, type: "Corporate Booking" });
+                  }}
+                  className={`flex-1 py-4 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${
+                    activeTab === "corporate"
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
+                >
+                  Corporate / Events
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                      Your Name
+                      Your Name *
                     </label>
                     <input
                       type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="John Doe"
-                      className="w-full bg-gray-50 border border-transparent focus:border-primary/10 rounded-2xl py-5 px-8 outline-none transition-all font-medium"
+                      className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                      Email Address
+                      Email Address *
                     </label>
                     <input
                       type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="john@example.com"
-                      className="w-full bg-gray-50 border border-transparent focus:border-primary/10 rounded-2xl py-5 px-8 outline-none transition-all font-medium"
+                      className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium"
                     />
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                      Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="+91 98765 43210"
+                      className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium"
+                    />
+                  </div>
+                  {activeTab === "corporate" && (
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                        Company Name
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.company}
+                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        placeholder="Your Company"
+                        className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium"
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                    Subject
+                    {activeTab === "general" ? "Subject" : "Enquiry Type"}
                   </label>
-                  <select className="w-full bg-gray-50 border border-transparent focus:border-primary/10 rounded-2xl py-5 px-8 outline-none transition-all font-medium appearance-none">
-                    <option>General Inquiry</option>
-                    <option>Order Support</option>
-                    <option>Bulk Order / Events</option>
-                    <option>Feedback</option>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium appearance-none cursor-pointer"
+                  >
+                    {activeTab === "general" ? (
+                      <>
+                        <option>General Inquiry</option>
+                        <option>Order Support</option>
+                        <option>Product Question</option>
+                        <option>Feedback</option>
+                      </>
+                    ) : (
+                      <>
+                        <option>Corporate Booking</option>
+                        <option>Event Catering</option>
+                        <option>Bulk Order</option>
+                        <option>Corporate Gifting</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                    Message
+                    Message *
                   </label>
                   <textarea
                     rows={6}
-                    placeholder="How can we help you today?"
-                    className="w-full bg-gray-50 border border-transparent focus:border-primary/10 rounded-2xl py-6 px-8 outline-none transition-all font-medium"
+                    required
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    placeholder={
+                      activeTab === "general"
+                        ? "How can we help you today?"
+                        : "Tell us about your event, expected guest count, and requirements..."
+                    }
+                    className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-6 px-6 outline-none transition-all font-medium resize-none"
                   />
                 </div>
 
-                <button className="w-full bg-primary text-white py-6 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-primary-dark transition-all shadow-xl active:scale-95 group">
-                  Send Deep Message{" "}
-                  <Send
-                    size={20}
-                    className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform"
-                  />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-primary text-white py-6 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-primary-dark transition-all shadow-xl active:scale-95 group disabled:opacity-70"
+                >
+                  {loading ? (
+                    "Sending..."
+                  ) : (
+                    <>
+                      Send Message{" "}
+                      <Send
+                        size={20}
+                        className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform"
+                      />
+                    </>
+                  )}
                 </button>
               </form>
             </motion.div>

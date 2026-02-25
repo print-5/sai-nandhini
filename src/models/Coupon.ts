@@ -9,26 +9,26 @@ const CouponSchema = new Schema(
       uppercase: true,
       trim: true,
     },
-    type: {
+    discountType: {
       type: String,
       enum: ["percentage", "fixed", "free-delivery"],
       required: true,
     },
-    value: {
+    discountValue: {
       type: Number,
       required: function (this: any) {
-        return this.type !== "free-delivery";
+        return this.discountType !== "free-delivery";
       },
       default: 0,
     },
-    minOrderAmount: {
+    minOrderValue: {
       type: Number,
       default: 0,
     },
     maxDiscountAmount: {
       type: Number,
     },
-    expiryDate: {
+    expiresAt: {
       type: Date,
     },
     usageLimit: {
@@ -48,6 +48,10 @@ const CouponSchema = new Schema(
     },
     description: {
       type: String,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {

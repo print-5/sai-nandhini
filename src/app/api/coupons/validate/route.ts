@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   try {
     const { code, orderAmount } = await req.json();
 
-    if (!code || !orderAmount) {
+    if (!code || orderAmount === undefined) {
       return NextResponse.json(
         { error: "Coupon code and order amount required" },
         { status: 400 },
@@ -18,7 +18,6 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-    const now = new Date();
 
     // Find coupon by code
     const coupon = await Coupon.findOne({
@@ -33,8 +32,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if coupon is valid (expiryDate)
-    if (coupon.expiryDate && new Date() > new Date(coupon.expiryDate)) {
+    // Check if coupon is expired
+    if (coupon.expiresAt && new Date() > new Date(coupon.expiresAt)) {
       return NextResponse.json(
         { error: "Coupon has expired" },
         { status: 400 },
@@ -50,10 +49,10 @@ export async function POST(req: Request) {
     }
 
     // Check minimum order amount
-    if (orderAmount < coupon.minOrderAmount) {
+    if (orderAmount < coupon.minOrderValue) {
       return NextResponse.json(
         {
-          error: `Minimum order amount of ₹${coupon.minOrderAmount} required for this coupon`,
+          error: `Minimum order amount of ₹${coupon.minOrderValue} required for this coupon`,
         },
         { status: 400 },
       );
@@ -63,24 +62,24 @@ export async function POST(req: Request) {
     let discount = 0;
     let isFreeDelivery = false;
 
-    if (coupon.type === "free-delivery") {
+    if (coupon.discountType === "free-delivery") {
       isFreeDelivery = true;
-      discount = 0;
-    } else if (coupon.type === "percentage") {
-      discount = (orderAmount * coupon.value) / 100;
+      discount = 0; // The actual discount happens by waiving shipping
+    } else if (coupon.discountType === "percentage") {
+      discount = (orderAmount * coupon.discountValue) / 100;
       if (coupon.maxDiscountAmount && discount > coupon.maxDiscountAmount) {
         discount = coupon.maxDiscountAmount;
       }
-    } else if (coupon.type === "fixed") {
-      discount = coupon.value;
+    } else if (coupon.discountType === "fixed") {
+      discount = coupon.discountValue;
     }
 
     return NextResponse.json({
       success: true,
       data: {
         code: coupon.code,
-        type: coupon.type,
-        value: coupon.value,
+        type: coupon.discountType,
+        value: coupon.discountValue,
         discount: discount,
         isFreeDelivery: isFreeDelivery,
         description: coupon.description,

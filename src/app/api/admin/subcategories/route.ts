@@ -50,3 +50,40 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || (session.user as any).role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Subcategory ID is required" },
+        { status: 400 },
+      );
+    }
+
+    await connectDB();
+
+    const deletedSubCategory = await SubCategory.findByIdAndDelete(id);
+
+    if (!deletedSubCategory) {
+      return NextResponse.json(
+        { error: "Subcategory not found" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ message: "Subcategory deleted successfully" });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

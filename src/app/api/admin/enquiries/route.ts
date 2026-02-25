@@ -25,3 +25,42 @@ export async function GET() {
     );
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || (session.user as any).role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id, status } = await req.json();
+
+    if (!id || !status) {
+      return NextResponse.json(
+        { error: "ID and status are required" },
+        { status: 400 },
+      );
+    }
+
+    await connectDB();
+    const enquiry = await Enquiry.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true },
+    );
+
+    if (!enquiry) {
+      return NextResponse.json({ error: "Enquiry not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(enquiry);
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Failed to update enquiry status" },
+      { status: 500 },
+    );
+  }
+}

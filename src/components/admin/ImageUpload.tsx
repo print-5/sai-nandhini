@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -56,10 +57,13 @@ export default function ImageUpload({
       <div className="flex flex-col gap-4">
         {preview ? (
           <div className="relative group w-full aspect-video md:aspect-[2/1] bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 shadow-sm animate-in fade-in zoom-in-95 duration-300">
-            <img
+            <Image
               src={preview}
               alt="Preview"
               className="w-full h-full object-contain"
+              fill
+              unoptimized
+              priority
             />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
               <button

@@ -74,6 +74,7 @@ export default function ProductClient({
     ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
   });
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [canReview, setCanReview] = useState(false);
   const { addToCart } = useCart();
   const router = useRouter();
   const { data: session } = authClient.useSession();
@@ -122,6 +123,7 @@ export default function ProductClient({
                 ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
               },
             );
+            setCanReview(data.canReview || false);
           }
         } catch (err) {
           console.error("Failed to fetch reviews", err);
@@ -586,12 +588,19 @@ export default function ProductClient({
                   Customer Reviews
                 </h2>
               </div>
-              <button
-                onClick={() => setIsReviewFormOpen(!isReviewFormOpen)}
-                className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold uppercase tracking-wider text-xs hover:bg-primary-dark transition-colors"
-              >
-                Write a Review
-              </button>
+              {canReview && (
+                <button
+                  onClick={() => setIsReviewFormOpen(!isReviewFormOpen)}
+                  className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold uppercase tracking-wider text-xs hover:bg-primary-dark transition-colors"
+                >
+                  {isReviewFormOpen ? "Close Form" : "Write a Review"}
+                </button>
+              )}
+              {!canReview && session && (
+                <p className="text-[10px] font-bold text-gray-400 uppercase bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+                  Reviews allowed after delivery
+                </p>
+              )}
             </div>
 
             <AnimatePresence>

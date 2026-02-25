@@ -10,7 +10,13 @@ const SettingsSchema = new Schema(
       default:
         "# 3/81, 1st Floor, Kaveri Main Street, SRV Nagar, Thirunagar, Madurai - 625006",
     },
-    taxRate: { type: Number, default: 5 }, // Percentage
+    taxRates: [
+      {
+        name: { type: String, required: true },
+        rate: { type: Number, required: true }, // Percentage
+        isDefault: { type: Boolean, default: false },
+      },
+    ],
     freeShippingThreshold: { type: Number, default: 500 },
     shippingFee: { type: Number, default: 50 },
     announcement: {

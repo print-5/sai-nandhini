@@ -9,23 +9,36 @@ import Newsletter from "@/components/Newsletter";
 import Footer from "@/components/Footer";
 import CorporateEnquiry from "@/components/CorporateEnquiry";
 import { Star } from "lucide-react";
+import { getHeroSlides, getCategories, getProducts } from "@/lib/data";
 
-export default function Home() {
+export const metadata = {
+  title: "Sai Nandhini | Authentic Homemade Sweets & Snacks",
+  description:
+    "Experience the tradition of handcrafted sweets and snacks from Sai Nandhini. Made with love and the finest ingredients.",
+};
+
+export default async function Home() {
+  const [heroSlides, categories, products] = await Promise.all([
+    getHeroSlides(),
+    getCategories(),
+    getProducts(),
+  ]);
+
   return (
     <main className="min-h-screen bg-[#F8F6F2]">
       <Navbar />
 
       {/* Hero Carousel */}
-      <HeroCarousel />
+      <HeroCarousel initialSlides={heroSlides} />
 
       {/* Trust Badges */}
       <TrustSection />
 
       {/* Top Categories */}
-      <CategorySection />
+      <CategorySection initialCategories={categories} />
 
       {/* Best Sellers */}
-      <FeaturedProducts />
+      <FeaturedProducts initialProducts={products.slice(0, 8)} />
 
       {/* Why Choose Us */}
       <WhyChooseUs />

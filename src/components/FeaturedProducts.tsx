@@ -1,34 +1,20 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Star, ShoppingBag, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useEffect, useState } from "react";
 
-export default function FeaturedProducts() {
+export default function FeaturedProducts({
+  initialProducts,
+}: {
+  initialProducts: any[];
+}) {
   const { addToCart } = useCart();
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch("/api/products");
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            setProducts(data.slice(0, 8));
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch products", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+  const [products] = useState<any[]>(initialProducts);
+  const [loading] = useState(false);
 
   if (loading)
     return (
@@ -78,7 +64,7 @@ export default function FeaturedProducts() {
               {/* Image Container */}
               <div className="relative rounded-2xl overflow-hidden bg-[#F8F6F2] aspect-square mb-4 border border-gray-100 group-hover:shadow-xl group-hover:shadow-[#2F3E2C]/5 transition-all">
                 <Link href={`/shop/${product.slug}`}>
-                  <img
+                  <Image
                     src={
                       product.images && product.images[0]
                         ? product.images[0]
@@ -86,6 +72,8 @@ export default function FeaturedProducts() {
                     }
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
                   />
                 </Link>
 
