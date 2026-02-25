@@ -2,31 +2,38 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Save,
   Loader2,
   Store,
-  Truck,
   ShieldCheck,
-  Globe,
   Plus,
   Trash2,
   Mail,
   Phone,
   MapPin,
-  AlertTriangle,
   CreditCard,
   Eye,
   EyeOff,
   Search,
-  Settings,
+  X,
   Image as ImageIcon,
-  ChevronRight,
+  MessageSquare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ImageUpload from "@/components/admin/ImageUpload";
 import toast from "react-hot-toast";
-import ConfirmationModal from "@/components/admin/ConfirmationModal";
+
+// Tab configuration
+const TABS = [
+  { id: "brand", label: "Brand Identity", icon: Store },
+  { id: "tax", label: "Tax & Pricing", icon: CreditCard },
+  { id: "payment", label: "Payment Gateway", icon: CreditCard },
+  { id: "checkout", label: "Checkout Rules", icon: ShieldCheck },
+  { id: "email", label: "Email Config", icon: Mail },
+  { id: "seo", label: "SEO & Metadata", icon: Search },
+  { id: "reviews", label: "Google Reviews", icon: MessageSquare },
+];
 
 // Reusable card wrapper
 function SettingsCard({
@@ -38,7 +45,7 @@ function SettingsCard({
 }) {
   return (
     <section
-      className={`bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-[#e5e7eb] ${className}`}
+      className={`bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 ${className}`}
     >
       {children}
     </section>
@@ -57,11 +64,11 @@ function CardHeader({
 }) {
   return (
     <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-      <div className="p-2.5 bg-[#2F3E2C]/8 rounded-xl text-[#2F3E2C]">
+      <div className="p-2.5 bg-primary/8 rounded-xl text-primary">
         {icon}
       </div>
       <div>
-        <h2 className="text-lg font-bold text-[#2F3E2C]">{title}</h2>
+        <h2 className="text-lg font-bold text-primary-dark">{title}</h2>
         <p className="text-xs text-gray-500">{description}</p>
       </div>
     </div>
@@ -79,7 +86,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 // Input class constants
 const INPUT_CLASS =
-  "w-full rounded-xl border border-gray-200 bg-gray-50/80 text-gray-900 py-3 px-4 outline-none focus:border-[#C6A75E] focus:ring-2 focus:ring-[#C6A75E]/20 transition-all placeholder:text-gray-400 text-sm";
+  "w-full rounded-xl border border-gray-200 bg-gray-50/80 text-gray-900 py-3 px-4 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all placeholder:text-gray-400 text-sm";
 
 // Toggle switch component
 function ToggleSwitch({
@@ -104,7 +111,7 @@ function ToggleSwitch({
       </div>
       <div
         className={`relative w-11 h-6 rounded-full transition-colors flex items-center px-0.5 shrink-0 ml-4 ${
-          checked ? "bg-[#C6A75E]" : "bg-gray-200"
+          checked ? "bg-accent" : "bg-gray-200"
         }`}
       >
         <div
@@ -119,1003 +126,1175 @@ function ToggleSwitch({
 
 export default function SettingsClient({
   initialSettings,
-  initialRates,
 }: {
   initialSettings: any;
-  initialRates: any[];
 }) {
-  const [settings, setSettings] = useState<any>(initialSettings);
+  const [activeTab, setActiveTab] = useState("brand");
+  // Initialize settings with proper defaults to prevent undefined errors
+  const [settings, setSettings] = useState<any>(() => ({
+    ...initialSettings,
+    payment: initialSettings?.payment || {},
+    smtp: initialSettings?.smtp || {},
+    seo: initialSettings?.seo || {},
+    socialMedia: initialSettings?.socialMedia || {},
+    googleMyBusiness: initialSettings?.googleMyBusiness || {},
+    taxRates: initialSettings?.taxRates || [],
+  }));
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [showRzpSecret, setShowRzpSecret] = useState(false);
   const [showSmtpPass, setShowSmtpPass] = useState(false);
-  const [deleteRateId, setDeleteRateId] = useState<string | null>(null);
   const [newTaxRate, setNewTaxRate] = useState({ name: "", rate: "" });
 
-  // Shipping Rates State
-  const [shippingRates, setShippingRates] = useState<any[]>(
-    Array.isArray(initialRates)
-      ? initialRates.sort((a: any, b: any) => a.minWeight - b.minWeight)
-      : [],
-  );
-  const [newRate, setNewRate] = useState({ min: "", max: "", rate: "" });
+  // Sync settings when initialSettings prop changes
+  useEffect(() => {
+    setSettings({
+      ...initialSettings,
+      payment: initialSettings?.payment || {},
+      smtp: initialSettings?.smtp || {},
+      seo: initialSettings?.seo || {},
+      socialMedia: initialSettings?.socialMedia || {},
+      googleMyBusiness: initialSettings?.googleMyBusiness || {},
+      taxRates: initialSettings?.taxRates || [],
+    });
+  }, [initialSettings]);
 
   const fetchAll = async () => {
     try {
-      const [settingsRes, ratesRes] = await Promise.all([
-        fetch("/api/admin/settings"),
-        fetch("/api/admin/shipping-rates"),
-      ]);
-
+      const settingsRes = await fetch("/api/admin/settings");
       const sData = await settingsRes.json();
-      const rData = await ratesRes.json();
-
       setSettings(sData);
-      setShippingRates(
-        Array.isArray(rData)
-          ? rData.sort((a: any, b: any) => a.minWeight - b.minWeight)
-          : [],
-      );
     } catch (e) {
       console.error(e);
     }
   };
 
-  const addRate = async () => {
-    if (!newRate.min || !newRate.max || !newRate.rate) return;
-    try {
-      const res = await fetch("/api/admin/shipping-rates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          minWeight: Number(newRate.min),
-          maxWeight: Number(newRate.max),
-          rate: Number(newRate.rate),
-        }),
-      });
-      if (res.ok) {
-        toast.success("Shipping rate added");
-        const rate = await res.json();
-        setShippingRates(
-          [...shippingRates, rate].sort(
-            (a: any, b: any) => a.minWeight - b.minWeight,
-          ),
-        );
-        setNewRate({ min: "", max: "", rate: "" });
-      }
-    } catch (e) {
-      console.error(e);
+  const addTaxRate = () => {
+    if (!newTaxRate.name || !newTaxRate.rate) {
+      toast.error("Please enter tax name and rate");
+      return;
     }
+    const updated = [
+      ...(settings.taxRates || []),
+      { 
+        name: newTaxRate.name, 
+        rate: Number(newTaxRate.rate), 
+        isDefault: (settings.taxRates || []).length === 0 // First tax is default
+      },
+    ];
+    setSettings({ ...settings, taxRates: updated });
+    setNewTaxRate({ name: "", rate: "" });
+    toast.success("Tax rate added");
   };
 
-  const deleteRate = async () => {
-    if (!deleteRateId) return;
-    try {
-      await fetch(`/api/admin/shipping-rates/${deleteRateId}`, {
-        method: "DELETE",
-      });
-      setShippingRates(shippingRates.filter((r) => r._id !== deleteRateId));
-      toast.success("Shipping rate deleted");
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to delete rate");
-    } finally {
-      setDeleteRateId(null);
+  const removeTaxRate = (index: number) => {
+    const updated = settings.taxRates.filter((_: any, i: number) => i !== index);
+    // If we removed the default, make the first one default
+    if (settings.taxRates[index].isDefault && updated.length > 0) {
+      updated[0].isDefault = true;
     }
+    setSettings({ ...settings, taxRates: updated });
+    toast.success("Tax rate removed");
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const setDefaultTax = (index: number) => {
+    const updated = settings.taxRates.map((t: any, i: number) => ({
+      ...t,
+      isDefault: i === index,
+    }));
+    setSettings({ ...settings, taxRates: updated });
+    toast.success("Default tax rate updated");
+  };
+
+  const handleSave = async () => {
     setSaving(true);
+    setMessage("");
     try {
-      const formData = new FormData();
-      // Clone settings and remove File objects for JSON stringification
-      const settingsData = { ...settings };
-      const logoFile =
-        settingsData.logo instanceof File ? settingsData.logo : null;
-      const faviconFile =
-        settingsData.favicon instanceof File ? settingsData.favicon : null;
-
-      if (logoFile) settingsData.logo = "";
-      if (faviconFile) settingsData.favicon = "";
-
-      formData.append("data", JSON.stringify(settingsData));
-      if (logoFile) formData.append("logo", logoFile);
-      if (faviconFile) formData.append("favicon", faviconFile);
-
       const res = await fetch("/api/admin/settings", {
-        method: "POST",
-        body: formData,
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
       });
-
+      
+      const data = await res.json();
+      
       if (res.ok) {
-        toast.success("Configuration Saved successfully");
-        // Refresh settings to get the new URLs
-        const updated = await res.json();
-        setSettings(updated);
+        toast.success("Settings saved successfully");
+        setMessage("Settings saved successfully!");
+        // Refresh settings to get masked passwords back
+        const refreshRes = await fetch("/api/admin/settings");
+        const refreshedData = await refreshRes.json();
+        setSettings(refreshedData);
+      } else {
+        const errorMsg = data.error || "Failed to save settings";
+        toast.error(errorMsg);
+        setMessage(errorMsg);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (e: any) {
+      console.error(e);
+      const errorMsg = e.message || "Error saving settings";
+      toast.error(errorMsg);
+      setMessage(errorMsg);
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="animate-spin text-[#C6A75E]" size={40} />
-      </div>
-    );
-
   return (
-    <div className="min-h-screen bg-[#F8F6F2] font-['Inter',sans-serif]">
-      <div className="mx-auto py-8 px-4 md:px-8">
-        {/* Page Header */}
-        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
+    <div className="space-y-6 pb-20">
+      {/* Header */}
+      <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <nav className="flex text-sm text-gray-400 mb-1.5 items-center gap-1">
-              <span className="hover:text-[#2F3E2C] cursor-pointer transition-colors">
-                Dashboard
-              </span>
-              <span className="mx-1 text-gray-300">/</span>
-              <span className="text-[#2F3E2C] font-semibold">Settings</span>
-            </nav>
-            <h1 className="text-3xl font-bold text-[#2F3E2C] tracking-tight">
-              Store Settings
+            <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] block mb-2">
+              Configuration
+            </span>
+            <h1 className="text-4xl font-serif font-black text-primary-dark">
+              Global Settings
             </h1>
-            <p className="text-gray-500 mt-1 text-sm">
-              Manage your store configuration and preferences.
+            <p className="text-gray-400 font-medium mt-2">
+              Manage your store configuration and preferences
             </p>
           </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-primary text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-3 shadow-xl hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save size={16} />
+                Save All Changes
+              </>
+            )}
+          </button>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-3">
-            <AnimatePresence>
-              {message && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, x: 20 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, x: 20 }}
-                  className="bg-[#2F3E2C] text-white px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 shadow-lg"
-                >
-                  <Save size={14} /> {message}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </header>
+      {/* Tabs Navigation */}
+      <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-2">
+        <div className="flex flex-wrap gap-2">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === tab.id
+                    ? "bg-primary text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <Icon size={16} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-        <ConfirmationModal
-          isOpen={!!deleteRateId}
-          onClose={() => setDeleteRateId(null)}
-          onConfirm={() => deleteRate()}
-          title="Delete Shipping Rate"
-          message="Are you sure you want to delete this shipping weighted rate?"
-          confirmText="Delete"
-          type="danger"
-        />
-
-        {/* Form */}
-        <form onSubmit={handleSave}>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* ═══════════════════════════════════════════
-                Card 1: Brand Identity
-            ═══════════════════════════════════════════ */}
+      {/* Tab Content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.2 }}
+        >
+          {/* Brand Identity Tab */}
+          {activeTab === "brand" && (
             <SettingsCard>
               <CardHeader
                 icon={<Store size={20} />}
                 title="Brand Identity"
-                description="General store information and contacts"
+                description="Configure your store's basic information and branding"
               />
-              <div className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <label className="block">
-                    <FieldLabel>Shop Name</FieldLabel>
-                    <input
-                      type="text"
-                      value={settings.shopName || ""}
-                      onChange={(e) =>
-                        setSettings({ ...settings, shopName: e.target.value })
-                      }
-                      className={INPUT_CLASS}
-                    />
-                  </label>
-                  <label className="block">
-                    <FieldLabel>Support Phone</FieldLabel>
-                    <div className="relative">
-                      <Phone
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-                        size={15}
-                      />
-                      <input
-                        type="text"
-                        value={settings.contactPhone || ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            contactPhone: e.target.value,
-                          })
-                        }
-                        className={`${INPUT_CLASS} pl-10`}
-                      />
-                    </div>
-                  </label>
+              <div className="space-y-6">
+                {/* Logo Upload */}
+                <div>
+                  <FieldLabel>Store Logo</FieldLabel>
+                  <div className="flex flex-col gap-3">
+                    {settings.logo ? (
+                      <div className="relative group w-full max-w-md h-32 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                        <Image
+                          src={settings.logo}
+                          alt="Logo"
+                          className="w-full h-full object-contain p-4"
+                          fill
+                          unoptimized
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={() => setSettings({ ...settings, logo: "" })}
+                            className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="w-full max-w-md h-32 border-2 border-dashed border-gray-200 hover:border-accent rounded-xl flex flex-col items-center justify-center cursor-pointer bg-gray-50/50 hover:bg-white transition-all">
+                        <ImageIcon size={24} className="text-gray-300 mb-2" />
+                        <p className="text-xs font-bold text-primary-dark">
+                          Upload Logo
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          PNG, JPG or SVG
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 2 * 1024 * 1024) {
+                                toast.error("File size must be less than 2MB");
+                                return;
+                              }
+                              // For now, just set the file object - you'll need to upload it
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setSettings({ ...settings, logo: reader.result as string });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Recommended: PNG or SVG format, transparent background
+                  </p>
                 </div>
 
-                <label className="block">
-                  <FieldLabel>Support Email</FieldLabel>
-                  <div className="relative">
-                    <Mail
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-                      size={15}
-                    />
-                    <input
-                      type="email"
-                      value={settings.contactEmail || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          contactEmail: e.target.value,
-                        })
-                      }
-                      className={`${INPUT_CLASS} pl-10`}
-                    />
+                {/* Favicon Upload */}
+                <div>
+                  <FieldLabel>Favicon</FieldLabel>
+                  <div className="flex flex-col gap-3">
+                    {settings.favicon ? (
+                      <div className="relative group w-24 h-24 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                        <Image
+                          src={settings.favicon}
+                          alt="Favicon"
+                          className="w-full h-full object-contain p-2"
+                          fill
+                          unoptimized
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={() => setSettings({ ...settings, favicon: "" })}
+                            className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="w-24 h-24 border-2 border-dashed border-gray-200 hover:border-accent rounded-xl flex flex-col items-center justify-center cursor-pointer bg-gray-50/50 hover:bg-white transition-all">
+                        <ImageIcon size={20} className="text-gray-300 mb-1" />
+                        <p className="text-[9px] font-bold text-primary-dark">
+                          Upload
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 1 * 1024 * 1024) {
+                                toast.error("File size must be less than 1MB");
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setSettings({ ...settings, favicon: reader.result as string });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
                   </div>
-                </label>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Recommended: 32x32px or 64x64px, ICO or PNG format
+                  </p>
+                </div>
 
-                <label className="block">
-                  <FieldLabel>Store Address</FieldLabel>
+                <div className="border-t border-gray-100 pt-6">
+                  <FieldLabel>Shop Name</FieldLabel>
+                  <input
+                    type="text"
+                    className={INPUT_CLASS}
+                    value={settings.shopName || ""}
+                    onChange={(e) =>
+                      setSettings({ ...settings, shopName: e.target.value })
+                    }
+                    placeholder="Your Shop Name"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <FieldLabel>Contact Email</FieldLabel>
+                    <div className="relative">
+                      <Mail
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={16}
+                      />
+                      <input
+                        type="email"
+                        className={`${INPUT_CLASS} pl-12`}
+                        value={settings.contactEmail || ""}
+                        onChange={(e) =>
+                          setSettings({ ...settings, contactEmail: e.target.value })
+                        }
+                        placeholder="contact@example.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <FieldLabel>Contact Phone</FieldLabel>
+                    <div className="relative">
+                      <Phone
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={16}
+                      />
+                      <input
+                        type="tel"
+                        className={`${INPUT_CLASS} pl-12`}
+                        value={settings.contactPhone || ""}
+                        onChange={(e) =>
+                          setSettings({ ...settings, contactPhone: e.target.value })
+                        }
+                        placeholder="+91 1234567890"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <FieldLabel>Business Address</FieldLabel>
                   <div className="relative">
                     <MapPin
-                      className="absolute left-3.5 top-3.5 text-gray-400"
-                      size={15}
+                      className="absolute left-4 top-4 text-gray-400"
+                      size={16}
                     />
                     <textarea
-                      rows={3}
+                      className={`${INPUT_CLASS} pl-12 min-h-[100px]`}
                       value={settings.address || ""}
                       onChange={(e) =>
                         setSettings({ ...settings, address: e.target.value })
                       }
-                      className={`${INPUT_CLASS} pl-10 resize-none`}
+                      placeholder="Enter your business address"
                     />
                   </div>
-                </label>
+                </div>
 
-                {/* Assets */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <ImageUpload
-                    label="Store Logo"
-                    value={settings.logo || ""}
-                    onChange={(val) => setSettings({ ...settings, logo: val })}
-                  />
-                  <ImageUpload
-                    label="Favicon"
-                    value={settings.favicon || ""}
-                    onChange={(val) =>
-                      setSettings({ ...settings, favicon: val })
+                <div>
+                  <FieldLabel>Announcement Banner</FieldLabel>
+                  <input
+                    type="text"
+                    className={INPUT_CLASS}
+                    value={settings.announcement || ""}
+                    onChange={(e) =>
+                      setSettings({ ...settings, announcement: e.target.value })
                     }
+                    placeholder="e.g., Free shipping on orders above ₹500!"
                   />
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    This message will appear at the top of your website
+                  </p>
                 </div>
               </div>
             </SettingsCard>
+          )}
 
-            {/* ═══════════════════════════════════════════
-                Card 2: Tax Management
-            ═══════════════════════════════════════════ */}
+          {/* Tax & Pricing Tab */}
+          {activeTab === "tax" && (
             <SettingsCard>
               <CardHeader
                 icon={<CreditCard size={20} />}
-                title="Tax Management"
-                description="Manage multiple tax rates for different categories"
+                title="Tax & Pricing"
+                description="Configure tax rates and pricing settings"
               />
               <div className="space-y-6">
-                {/* Add New Tax Rate */}
-                <div className="p-5 bg-gray-50 rounded-xl border border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-700 mb-4">
-                    Add New Tax Rate
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <input
-                      type="text"
-                      placeholder="Tax Name (e.g., GST, VAT)"
-                      value={newTaxRate.name}
-                      onChange={(e) =>
-                        setNewTaxRate({ ...newTaxRate, name: e.target.value })
-                      }
-                      className={INPUT_CLASS}
-                    />
-                    <input
-                      type="number"
-                      step="0.01"
-                      placeholder="Rate (%)"
-                      value={newTaxRate.rate}
-                      onChange={(e) =>
-                        setNewTaxRate({ ...newTaxRate, rate: e.target.value })
-                      }
-                      className={INPUT_CLASS}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!newTaxRate.name || !newTaxRate.rate) {
-                          toast.error("Please fill all fields");
-                          return;
-                        }
-                        const taxRates = settings.taxRates || [];
-                        setSettings({
-                          ...settings,
-                          taxRates: [
-                            ...taxRates,
-                            {
-                              name: newTaxRate.name,
-                              rate: Number(newTaxRate.rate),
-                              isDefault: taxRates.length === 0,
-                            },
-                          ],
-                        });
-                        setNewTaxRate({ name: "", rate: "" });
-                        toast.success("Tax rate added");
-                      }}
-                      className="bg-primary hover:bg-primary-dark text-white py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2"
-                    >
-                      <Plus size={18} />
-                      Add
-                    </button>
-                  </div>
-                </div>
-
-                {/* Existing Tax Rates */}
-                <div className="space-y-3">
-                  {settings.taxRates && settings.taxRates.length > 0 ? (
-                    settings.taxRates.map((tax: any, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-primary/30 transition-all"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div>
-                            <p className="font-bold text-primary-dark">
-                              {tax.name}
-                            </p>
-                            <p className="text-sm text-gray-500">{tax.rate}%</p>
-                          </div>
-                          {tax.isDefault && (
-                            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                              Default
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {!tax.isDefault && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updatedRates = settings.taxRates.map(
-                                  (t: any, i: number) => ({
-                                    ...t,
-                                    isDefault: i === index,
-                                  }),
-                                );
-                                setSettings({
-                                  ...settings,
-                                  taxRates: updatedRates,
-                                });
-                                toast.success("Default tax rate updated");
-                              }}
-                              className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold transition-all"
-                            >
-                              Set Default
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updatedRates = settings.taxRates.filter(
-                                (_: any, i: number) => i !== index,
-                              );
-                              setSettings({
-                                ...settings,
-                                taxRates: updatedRates,
-                              });
-                              toast.success("Tax rate removed");
-                            }}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-gray-400">
-                      <CreditCard
-                        size={40}
-                        className="mx-auto mb-3 opacity-30"
-                      />
-                      <p>No tax rates configured yet</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </SettingsCard>
-
-            {/* ═══════════════════════════════════════════
-                Card 3: Logistics Settings
-            ═══════════════════════════════════════════ */}
-            <SettingsCard>
-              <CardHeader
-                icon={<Truck size={20} />}
-                title="Logistics Settings"
-                description="Shipping and inventory management"
-              />
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                  <label className="block">
-                    <FieldLabel>Low Stock Alert</FieldLabel>
-                    <div className="relative">
+                {/* Pricing Settings */}
+                <div>
+                  <FieldLabel>Pricing Settings</FieldLabel>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-xs text-gray-500 mb-2 block">
+                        Free Shipping Threshold (₹)
+                      </label>
                       <input
                         type="number"
-                        value={settings.lowStockThreshold ?? ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            lowStockThreshold: Number(e.target.value),
-                          })
-                        }
-                        className={`${INPUT_CLASS} pr-8`}
-                      />
-                      <AlertTriangle
-                        className="absolute right-3 top-3.5 text-orange-400"
-                        size={14}
-                      />
-                    </div>
-                  </label>
-                  <label className="block sm:col-span-1">
-                    <FieldLabel>Inventory Control</FieldLabel>
-                    <div className="pt-2">
-                      <ToggleSwitch
-                        checked={!!settings.manageInventory}
-                        onChange={() =>
-                          setSettings({
-                            ...settings,
-                            manageInventory: !settings.manageInventory,
-                          })
-                        }
-                        label="Manage Inventory"
-                        description="Track stock levels & hide OOS items"
-                      />
-                    </div>
-                  </label>
-                </div>
-
-                {/* Shipping Management Link */}
-                <div className="p-5 bg-primary/5 border border-primary/20 rounded-xl">
-                  <div className="flex items-start gap-3">
-                    <Truck className="text-primary mt-0.5" size={20} />
-                    <div className="flex-grow">
-                      <h3 className="text-sm font-bold text-primary-dark mb-1">
-                        Weight-Based Shipping Rates
-                      </h3>
-                      <p className="text-xs text-gray-600 mb-3">
-                        Configure shipping charges based on order weight ranges.
-                        Manage multiple rate tiers for different weight
-                        brackets.
-                      </p>
-                      <Link
-                        href="/admin/shipping"
-                        className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:text-primary-dark transition-colors"
-                      >
-                        Manage Shipping Rates
-                        <ChevronRight size={14} />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <label className="block">
-                    <FieldLabel>Shipping Fee</FieldLabel>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-3 text-gray-500 font-medium">
-                        ₹
-                      </span>
-                      <input
-                        type="number"
-                        value={settings.shippingFee ?? ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            shippingFee: Number(e.target.value),
-                          })
-                        }
-                        className={`${INPUT_CLASS} pl-8`}
-                      />
-                    </div>
-                  </label>
-                  <label className="block">
-                    <FieldLabel>Free Ship Above</FieldLabel>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-3 text-gray-500 font-medium">
-                        ₹
-                      </span>
-                      <input
-                        type="number"
-                        value={settings.freeShippingThreshold ?? ""}
+                        className={INPUT_CLASS}
+                        value={settings.freeShippingThreshold || ""}
                         onChange={(e) =>
                           setSettings({
                             ...settings,
                             freeShippingThreshold: Number(e.target.value),
                           })
                         }
-                        className={`${INPUT_CLASS} pl-8`}
+                        placeholder="500"
                       />
+                      <p className="text-xs text-gray-400 mt-1.5">
+                        Orders above this amount get free shipping
+                      </p>
                     </div>
-                  </label>
-                </div>
 
-                {/* Payment Gateway Sub-Section */}
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                  <h3 className="text-sm font-bold text-[#2F3E2C] mb-4 flex items-center gap-2">
-                    <CreditCard size={16} className="text-[#C6A75E]" />
-                    Payment Gateway (Razorpay)
-                  </h3>
-                  <div className="space-y-4">
-                    <label className="block">
-                      <span className="text-xs font-semibold text-gray-500 mb-1 block uppercase tracking-wide">
-                        Key ID
-                      </span>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-2 block">
+                        Default Shipping Fee (₹)
+                      </label>
                       <input
-                        type="text"
-                        placeholder="rzp_live_xxxxxxxxxxxx"
-                        value={settings.payment?.razorpayKeyId || ""}
+                        type="number"
+                        className={INPUT_CLASS}
+                        value={settings.shippingFee || ""}
                         onChange={(e) =>
                           setSettings({
                             ...settings,
-                            payment: {
-                              ...settings.payment,
-                              razorpayKeyId: e.target.value,
-                            },
+                            shippingFee: Number(e.target.value),
                           })
                         }
-                        className="w-full rounded-lg border border-gray-200 bg-white text-sm py-2.5 px-3 outline-none focus:border-[#C6A75E] focus:ring-2 focus:ring-[#C6A75E]/20 font-mono"
+                        placeholder="50"
                       />
-                    </label>
-                    <label className="block">
-                      <span className="text-xs font-semibold text-gray-500 mb-1 block uppercase tracking-wide">
-                        Key Secret
-                      </span>
-                      <div className="relative">
-                        <input
-                          type={showRzpSecret ? "text" : "password"}
-                          placeholder="••••••••"
-                          value={settings.payment?.razorpayKeySecret || ""}
-                          onChange={(e) =>
-                            setSettings({
-                              ...settings,
-                              payment: {
-                                ...settings.payment,
-                                razorpayKeySecret: e.target.value,
-                              },
-                            })
-                          }
-                          className="w-full rounded-lg border border-gray-200 bg-white text-sm py-2.5 px-3 pr-10 outline-none focus:border-[#C6A75E] focus:ring-2 focus:ring-[#C6A75E]/20 font-mono"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowRzpSecret(!showRzpSecret)}
-                          className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 transition-colors"
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tax Rates */}
+                <div className="border-t border-gray-100 pt-6">
+                  <FieldLabel>Tax Rates</FieldLabel>
+                  <div className="space-y-3">
+                    {settings.taxRates && settings.taxRates.length > 0 ? (
+                      settings.taxRates.map((tax: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
                         >
-                          {showRzpSecret ? (
-                            <EyeOff size={16} />
-                          ) : (
-                            <Eye size={16} />
-                          )}
-                        </button>
-                      </div>
-                    </label>
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <p className="font-semibold text-gray-900">
+                                {tax.name}
+                              </p>
+                              <p className="text-sm text-gray-500">{tax.rate}%</p>
+                            </div>
+                            {tax.isDefault && (
+                              <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-lg">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {!tax.isDefault && (
+                              <button
+                                type="button"
+                                onClick={() => setDefaultTax(index)}
+                                className="text-xs font-bold text-primary hover:text-primary-dark px-3 py-1.5 bg-white rounded-lg border border-gray-200 hover:border-primary transition-colors"
+                              >
+                                Set Default
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeTaxRate(index)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500 text-center py-4">
+                        No tax rates configured
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Add New Tax Rate */}
+                <div className="border-t border-gray-100 pt-6">
+                  <FieldLabel>Add New Tax Rate</FieldLabel>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      className={`${INPUT_CLASS} flex-1`}
+                      placeholder="Tax Name (e.g., GST)"
+                      value={newTaxRate.name}
+                      onChange={(e) =>
+                        setNewTaxRate({ ...newTaxRate, name: e.target.value })
+                      }
+                    />
+                    <input
+                      type="number"
+                      className={`${INPUT_CLASS} w-32`}
+                      placeholder="Rate %"
+                      value={newTaxRate.rate}
+                      onChange={(e) =>
+                        setNewTaxRate({ ...newTaxRate, rate: e.target.value })
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={addTaxRate}
+                      className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-colors flex items-center gap-2"
+                    >
+                      <Plus size={16} />
+                      Add
+                    </button>
                   </div>
                 </div>
               </div>
             </SettingsCard>
+          )}
 
-            {/* ═══════════════════════════════════════════
-                Card 3: Checkout Rules
-            ═══════════════════════════════════════════ */}
+          {/* Payment Gateway Tab */}
+          {activeTab === "payment" && (
+            <SettingsCard>
+              <CardHeader
+                icon={<CreditCard size={20} />}
+                title="Payment Gateway"
+                description="Configure Razorpay payment gateway settings"
+              />
+              <div className="space-y-6">
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                      <CreditCard size={16} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 mb-1">
+                        Razorpay Integration
+                      </p>
+                      <p className="text-xs text-blue-700">
+                        Get your API keys from{" "}
+                        <a
+                          href="https://dashboard.razorpay.com/app/keys"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline font-semibold hover:text-blue-900"
+                        >
+                          Razorpay Dashboard
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <FieldLabel>Razorpay Key ID</FieldLabel>
+                  <input
+                    type="text"
+                    className={INPUT_CLASS}
+                    value={settings.payment?.razorpayKeyId || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        payment: {
+                          ...settings.payment,
+                          razorpayKeyId: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="rzp_test_xxxxxxxxxxxxx"
+                  />
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Your Razorpay Key ID (starts with rzp_test_ or rzp_live_)
+                  </p>
+                </div>
+
+                <div>
+                  <FieldLabel>Razorpay Key Secret</FieldLabel>
+                  <div className="relative">
+                    <input
+                      type={showRzpSecret ? "text" : "password"}
+                      className={`${INPUT_CLASS} pr-12`}
+                      value={settings.payment?.razorpayKeySecret || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          payment: {
+                            ...settings.payment,
+                            razorpayKeySecret: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="••••••••••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRzpSecret(!showRzpSecret)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showRzpSecret ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Your Razorpay Key Secret (keep this confidential)
+                  </p>
+                </div>
+
+                <div>
+                  <FieldLabel>Webhook Secret (Optional)</FieldLabel>
+                  <input
+                    type="text"
+                    className={INPUT_CLASS}
+                    value={settings.payment?.razorpayWebhookSecret || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        payment: {
+                          ...settings.payment,
+                          razorpayWebhookSecret: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="whsec_xxxxxxxxxxxxx"
+                  />
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Webhook secret for payment verification (optional but recommended)
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6">
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+                        <ShieldCheck size={16} className="text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-amber-900 mb-1">
+                          Security Note
+                        </p>
+                        <p className="text-xs text-amber-700">
+                          Never share your Key Secret publicly. Use test keys for
+                          development and live keys only in production.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </SettingsCard>
+          )}
+
+          {/* Checkout Rules Tab */}
+          {activeTab === "checkout" && (
             <SettingsCard>
               <CardHeader
                 icon={<ShieldCheck size={20} />}
                 title="Checkout Rules"
-                description="Configure the customer checkout experience"
+                description="Configure checkout and order management settings"
               />
-
-              <div className="space-y-1">
-                {/* <ToggleSwitch
-                  checked={!!settings.shippingByWeight}
+              <div className="space-y-4">
+                <ToggleSwitch
+                  checked={settings.manageInventory || false}
                   onChange={() =>
                     setSettings({
                       ...settings,
-                      shippingByWeight: !settings.shippingByWeight,
+                      manageInventory: !settings.manageInventory,
                     })
                   }
-                  label="Weight Based Shipping"
-                  description="Calculate fees based on total cart weight"
-                /> */}
+                  label="Manage Inventory"
+                  description="Track stock levels and prevent overselling"
+                />
+
                 <ToggleSwitch
-                  checked={!!settings.allowOrderCancellation}
+                  checked={settings.allowOrderCancellation || false}
                   onChange={() =>
                     setSettings({
                       ...settings,
                       allowOrderCancellation: !settings.allowOrderCancellation,
                     })
                   }
-                  label="Order Cancellation"
-                  description="Allow customers to cancel orders before shipping"
+                  label="Allow Order Cancellation"
+                  description="Let customers cancel their orders"
                 />
+
                 <ToggleSwitch
-                  checked={!!settings.allowScheduledOrders}
+                  checked={settings.allowScheduledOrders || false}
                   onChange={() =>
                     setSettings({
                       ...settings,
                       allowScheduledOrders: !settings.allowScheduledOrders,
                     })
                   }
-                  label="Scheduled Delivery"
-                  description="Enable delivery slot selection at checkout"
+                  label="Allow Scheduled Orders"
+                  description="Enable customers to schedule delivery dates"
                 />
-              </div>
 
-              {/* Weight Rate Table (Collapsible) */}
-              <AnimatePresence>
-                {settings.shippingByWeight && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="mt-4 p-5 bg-gray-50 rounded-xl border border-gray-100">
-                      <h4 className="font-bold text-[#2F3E2C] text-xs uppercase tracking-wider mb-4">
-                        Weight Rate Table
-                      </h4>
-                      <div className="space-y-2 mb-4">
-                        {shippingRates.map((rate) => (
-                          <div
-                            key={rate._id}
-                            className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-100"
-                          >
-                            <span className="text-xs font-semibold text-gray-500">
-                              {rate.minWeight}kg – {rate.maxWeight}kg
-                            </span>
-                            <span className="text-xs font-bold text-[#2F3E2C]">
-                              ₹{rate.rate}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteRateId(rate._id);
-                              }}
-                              className="text-red-400 hover:text-red-600 transition-colors"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        ))}
-                        {shippingRates.length === 0 && (
-                          <p className="text-xs text-gray-400 italic text-center py-2">
-                            No custom rates defined.
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <input
-                          placeholder="Min kg"
-                          type="number"
-                          className="w-full p-2.5 rounded-lg border border-gray-200 bg-white text-xs font-medium outline-none focus:ring-2 focus:ring-[#C6A75E]/20"
-                          value={newRate.min}
-                          onChange={(e) =>
-                            setNewRate({ ...newRate, min: e.target.value })
-                          }
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <input
-                          placeholder="Max kg"
-                          type="number"
-                          className="w-full p-2.5 rounded-lg border border-gray-200 bg-white text-xs font-medium outline-none focus:ring-2 focus:ring-[#C6A75E]/20"
-                          value={newRate.max}
-                          onChange={(e) =>
-                            setNewRate({ ...newRate, max: e.target.value })
-                          }
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <input
-                          placeholder="₹ Rate"
-                          type="number"
-                          className="w-full p-2.5 rounded-lg border border-gray-200 bg-white text-xs font-medium outline-none focus:ring-2 focus:ring-[#C6A75E]/20"
-                          value={newRate.rate}
-                          onChange={(e) =>
-                            setNewRate({ ...newRate, rate: e.target.value })
-                          }
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addRate();
-                          }}
-                          className="bg-[#2F3E2C] text-white p-2.5 rounded-lg hover:bg-[#1f2b1d] transition-colors shrink-0"
-                        >
-                          <Plus size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </SettingsCard>
-
-            {/* ═══════════════════════════════════════════
-                Card 4: Email Configuration
-            ═══════════════════════════════════════════ */}
-            <SettingsCard>
-              <CardHeader
-                icon={<Mail size={20} />}
-                title="Email Configuration"
-                description="SMTP server settings for transactional emails"
-              />
-              <div className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <label className="block">
-                    <FieldLabel>SMTP Host</FieldLabel>
-                    <input
-                      type="text"
-                      placeholder="smtp.gmail.com"
-                      value={settings.smtp?.host || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          smtp: {
-                            ...(settings.smtp || {}),
-                            host: e.target.value,
-                          },
-                        })
-                      }
-                      className={INPUT_CLASS}
-                    />
-                  </label>
-                  <label className="block">
-                    <FieldLabel>Port</FieldLabel>
-                    <input
-                      type="number"
-                      placeholder="587"
-                      value={settings.smtp?.port || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          smtp: {
-                            ...(settings.smtp || {}),
-                            port: Number(e.target.value),
-                          },
-                        })
-                      }
-                      className={INPUT_CLASS}
-                    />
-                  </label>
-                  <label className="block">
-                    <FieldLabel>Username</FieldLabel>
-                    <input
-                      type="text"
-                      placeholder="user@example.com"
-                      value={settings.smtp?.user || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          smtp: {
-                            ...(settings.smtp || {}),
-                            user: e.target.value,
-                          },
-                        })
-                      }
-                      className={INPUT_CLASS}
-                    />
-                  </label>
-                  <label className="block">
-                    <FieldLabel>Password</FieldLabel>
-                    <div className="relative">
-                      <input
-                        type={showSmtpPass ? "text" : "password"}
-                        placeholder="••••••••"
-                        value={settings.smtp?.password || ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            smtp: {
-                              ...(settings.smtp || {}),
-                              password: e.target.value,
-                            },
-                          })
-                        }
-                        className={`${INPUT_CLASS} pr-10`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowSmtpPass(!showSmtpPass)}
-                        className="absolute right-2.5 top-3 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        {showSmtpPass ? (
-                          <EyeOff size={16} />
-                        ) : (
-                          <Eye size={16} />
-                        )}
-                      </button>
-                    </div>
-                  </label>
-                </div>
-
-                {/* SSL Checkbox */}
-                <div className="flex items-center p-4 border border-gray-100 rounded-xl bg-gray-50/50">
-                  <input
-                    type="checkbox"
-                    id="ssl-checkbox"
-                    checked={settings.smtp?.secure || false}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        smtp: {
-                          ...(settings.smtp || {}),
-                          secure: e.target.checked,
-                        },
-                      })
-                    }
-                    className="w-4 h-4 text-[#C6A75E] bg-gray-100 border-gray-300 rounded focus:ring-[#C6A75E] focus:ring-2"
-                  />
-                  <label
-                    htmlFor="ssl-checkbox"
-                    className="ms-3 text-sm font-medium text-gray-700 cursor-pointer"
-                  >
-                    Enable SSL/TLS Security
-                  </label>
-                </div>
-              </div>
-            </SettingsCard>
-
-            {/* ═══════════════════════════════════════════
-                Card 5: SEO & Metadata (Full Width)
-            ═══════════════════════════════════════════ */}
-            <SettingsCard className="xl:col-span-2">
-              <CardHeader
-                icon={<Search size={20} />}
-                title="SEO & Metadata"
-                description="Optimize how your store appears on search engines"
-              />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-5">
-                  <label className="block">
-                    <FieldLabel>Meta Title</FieldLabel>
-                    <input
-                      type="text"
-                      value={settings.seo?.metaTitle || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          seo: {
-                            ...(settings.seo || {}),
-                            metaTitle: e.target.value,
-                          },
-                        })
-                      }
-                      className={INPUT_CLASS}
-                    />
-                    <span className="text-xs text-gray-400 mt-1 block">
-                      Recommended: 50–60 characters
-                    </span>
-                  </label>
-                  <label className="block">
-                    <FieldLabel>Meta Keywords</FieldLabel>
-                    <input
-                      type="text"
-                      value={settings.seo?.keywords || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          seo: {
-                            ...(settings.seo || {}),
-                            keywords: e.target.value,
-                          },
-                        })
-                      }
-                      placeholder="sweets, snacks, indian food..."
-                      className={INPUT_CLASS}
-                    />
-                  </label>
-                </div>
-                <label className="block">
-                  <FieldLabel>Meta Description</FieldLabel>
-                  <textarea
-                    rows={5}
-                    value={settings.seo?.metaDescription || ""}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        seo: {
-                          ...(settings.seo || {}),
-                          metaDescription: e.target.value,
-                        },
-                      })
-                    }
-                    className={`${INPUT_CLASS} resize-none h-full min-h-[140px]`}
-                  />
-                  <span className="text-xs text-gray-400 mt-1 block">
-                    Recommended: 150–160 characters
-                  </span>
-                </label>
-              </div>
-            </SettingsCard>
-
-            {/* ═══════════════════════════════════════════
-                System Actions (Full Width)
-            ═══════════════════════════════════════════ */}
-            <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Maintenance Mode */}
-              {/* <div className="bg-[#2F3E2C] p-6 md:p-8 rounded-2xl text-white flex items-center justify-between">
-                <div>
-                  <h4 className="text-base font-bold mb-0.5">
-                    Maintenance Mode
-                  </h4>
-                  <p className="text-xs text-white/50">
-                    Take store offline temporarily
-                  </p>
-                </div>
-                <div
-                  onClick={() =>
+                <ToggleSwitch
+                  checked={settings.isMaintenanceMode || false}
+                  onChange={() =>
                     setSettings({
                       ...settings,
                       isMaintenanceMode: !settings.isMaintenanceMode,
                     })
                   }
-                  className={`w-12 h-7 rounded-full transition-colors flex items-center px-0.5 cursor-pointer shrink-0 ${
-                    settings.isMaintenanceMode ? "bg-[#C6A75E]" : "bg-white/20"
-                  }`}
-                >
-                  <div
-                    className={`w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                      settings.isMaintenanceMode
-                        ? "translate-x-5"
-                        : "translate-x-0"
-                    }`}
+                  label="Maintenance Mode"
+                  description="Temporarily disable the store for maintenance"
+                />
+
+                <div className="border-t border-gray-100 pt-6 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <FieldLabel>Minimum Order Value (₹)</FieldLabel>
+                      <input
+                        type="number"
+                        className={INPUT_CLASS}
+                        value={settings.minOrderValue || ""}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            minOrderValue: Number(e.target.value),
+                          })
+                        }
+                        placeholder="0"
+                      />
+                      <p className="text-xs text-gray-500 mt-1.5">
+                        Minimum amount required to place an order
+                      </p>
+                    </div>
+
+                    <div>
+                      <FieldLabel>Low Stock Threshold</FieldLabel>
+                      <input
+                        type="number"
+                        className={INPUT_CLASS}
+                        value={settings.lowStockThreshold || ""}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            lowStockThreshold: Number(e.target.value),
+                          })
+                        }
+                        placeholder="10"
+                      />
+                      <p className="text-xs text-gray-500 mt-1.5">
+                        Get notified when stock falls below this level
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </SettingsCard>
+          )}
+
+          {/* Email Configuration Tab */}
+          {activeTab === "email" && (
+            <SettingsCard>
+              <CardHeader
+                icon={<Mail size={20} />}
+                title="Email Configuration"
+                description="Configure SMTP settings for sending emails"
+              />
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <FieldLabel>SMTP Host</FieldLabel>
+                    <input
+                      type="text"
+                      className={INPUT_CLASS}
+                      value={settings.smtp?.host || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          smtp: { ...settings.smtp, host: e.target.value },
+                        })
+                      }
+                      placeholder="smtp.gmail.com"
+                    />
+                  </div>
+
+                  <div>
+                    <FieldLabel>SMTP Port</FieldLabel>
+                    <input
+                      type="number"
+                      className={INPUT_CLASS}
+                      value={settings.smtp?.port || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          smtp: {
+                            ...settings.smtp,
+                            port: Number(e.target.value),
+                          },
+                        })
+                      }
+                      placeholder="587"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <FieldLabel>SMTP Username</FieldLabel>
+                  <input
+                    type="text"
+                    className={INPUT_CLASS}
+                    value={settings.smtp?.user || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        smtp: { ...settings.smtp, user: e.target.value },
+                      })
+                    }
+                    placeholder="your-email@gmail.com"
                   />
                 </div>
-              </div> */}
-            </div>
-          </div>
 
-          {/* Sticky Save Button */}
-          <div className="flex justify-end sticky bottom-6 z-20 pointer-events-none mt-8">
-            <button
-              type="submit"
-              disabled={saving}
-              className="pointer-events-auto bg-[#C6A75E] hover:bg-[#b0934e] text-white px-8 py-4 rounded-2xl font-bold text-sm shadow-xl shadow-[#C6A75E]/25 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
-            >
-              {saving ? (
-                <Loader2 className="animate-spin" size={18} />
-              ) : (
-                <Save size={18} />
-              )}
-              Save Changes
-            </button>
-          </div>
-        </form>
+                <div>
+                  <FieldLabel>SMTP Password</FieldLabel>
+                  <div className="relative">
+                    <input
+                      type={showSmtpPass ? "text" : "password"}
+                      className={`${INPUT_CLASS} pr-12`}
+                      value={settings.smtp?.password || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          smtp: { ...settings.smtp, password: e.target.value },
+                        })
+                      }
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSmtpPass(!showSmtpPass)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showSmtpPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </SettingsCard>
+          )}
 
-        {/* Footer */}
-        <footer className="mt-12 mb-6 border-t border-gray-200 pt-6 text-center text-sm text-gray-400">
-          <p>
-            © {new Date().getFullYear()} Sai Nandhini Tasty World. All rights
-            reserved. <span className="mx-2">•</span> Admin Panel v1.2.0
-          </p>
-        </footer>
-      </div>
+          {/* Google Reviews Tab */}
+          {activeTab === "reviews" && (
+            <SettingsCard>
+              <CardHeader
+                icon={<MessageSquare size={20} />}
+                title="Google My Business Reviews"
+                description="Display authentic Google reviews on your website"
+              />
+              <div className="space-y-6">
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                      <MessageSquare size={16} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 mb-1">
+                        Google Places API Setup
+                      </p>
+                      <p className="text-xs text-blue-700 mb-2">
+                        Display your Google reviews using Google Places API (simpler than My Business API).
+                      </p>
+                      <ol className="text-xs text-blue-700 space-y-1 list-decimal list-inside">
+                        <li>Your Google Maps API Key should have "Places API" enabled</li>
+                        <li>Find your Place ID: <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Place ID Finder</a></li>
+                        <li>Or search your business on Google Maps, copy the URL, and extract the Place ID</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+
+                <ToggleSwitch
+                  checked={settings.googleMyBusiness?.enabled || false}
+                  onChange={() =>
+                    setSettings({
+                      ...settings,
+                      googleMyBusiness: {
+                        ...settings.googleMyBusiness,
+                        enabled: !settings.googleMyBusiness?.enabled,
+                      },
+                    })
+                  }
+                  label="Enable Google Reviews"
+                  description="Display Google My Business reviews on your website"
+                />
+
+                <div className="border-t border-gray-100 pt-6">
+                  <div>
+                    <FieldLabel>Google Place ID</FieldLabel>
+                    <input
+                      type="text"
+                      className={INPUT_CLASS}
+                      value={settings.googleMyBusiness?.placeId || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          googleMyBusiness: {
+                            ...settings.googleMyBusiness,
+                            placeId: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4"
+                    />
+                    <p className="text-xs text-gray-500 mt-1.5">
+                      Find your Place ID using the <a href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder" target="_blank" rel="noopener noreferrer" className="text-primary underline">Place ID Finder</a>
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <FieldLabel>Google Maps API Key</FieldLabel>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      className={INPUT_CLASS}
+                      value={settings.googleMyBusiness?.apiKey || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          googleMyBusiness: {
+                            ...settings.googleMyBusiness,
+                            apiKey: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="AIzaSy••••••••••••••••••••••"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Your Google Maps API Key with Places API enabled (starts with AIzaSy)
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6">
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+                        <ShieldCheck size={16} className="text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-amber-900 mb-1">
+                          Important Notes
+                        </p>
+                        <ul className="text-xs text-amber-700 space-y-1 list-disc list-inside">
+                          <li>Reviews are cached for 1 hour to avoid API rate limits</li>
+                          <li>Only approved reviews will be displayed publicly</li>
+                          <li>Keep your API credentials secure and never share them</li>
+                          <li>OAuth 2.0 is recommended for production use</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </SettingsCard>
+          )}
+
+          {/* SEO & Metadata Tab */}
+          {activeTab === "seo" && (
+            <SettingsCard>
+              <CardHeader
+                icon={<Search size={20} />}
+                title="SEO & Metadata"
+                description="Optimize your store for search engines"
+              />
+              <div className="space-y-6">
+                <div>
+                  <FieldLabel>Meta Title</FieldLabel>
+                  <input
+                    type="text"
+                    className={INPUT_CLASS}
+                    value={settings.seo?.metaTitle || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        seo: { ...settings.seo, metaTitle: e.target.value },
+                      })
+                    }
+                    placeholder="Your Store Name - Best Products Online"
+                  />
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Recommended: 50-60 characters
+                  </p>
+                </div>
+
+                <div>
+                  <FieldLabel>Meta Description</FieldLabel>
+                  <textarea
+                    className={`${INPUT_CLASS} min-h-[100px]`}
+                    value={settings.seo?.metaDescription || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        seo: { ...settings.seo, metaDescription: e.target.value },
+                      })
+                    }
+                    placeholder="Describe your store in 150-160 characters..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Recommended: 150-160 characters
+                  </p>
+                </div>
+
+                <div>
+                  <FieldLabel>Keywords</FieldLabel>
+                  <input
+                    type="text"
+                    className={INPUT_CLASS}
+                    value={settings.seo?.keywords || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        seo: { ...settings.seo, keywords: e.target.value },
+                      })
+                    }
+                    placeholder="bakery, cakes, cookies, sweets"
+                  />
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Separate keywords with commas
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6">
+                  <FieldLabel>Open Graph Image</FieldLabel>
+                  <div className="flex flex-col gap-3">
+                    {settings.seo?.ogImage ? (
+                      <div className="relative group w-full max-w-md h-48 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                        <Image
+                          src={settings.seo.ogImage}
+                          alt="OG Image"
+                          className="w-full h-full object-cover"
+                          fill
+                          unoptimized
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSettings({
+                                ...settings,
+                                seo: { ...settings.seo, ogImage: "" },
+                              })
+                            }
+                            className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="w-full max-w-md h-48 border-2 border-dashed border-gray-200 hover:border-accent rounded-xl flex flex-col items-center justify-center cursor-pointer bg-gray-50/50 hover:bg-white transition-all">
+                        <ImageIcon size={32} className="text-gray-300 mb-2" />
+                        <p className="text-xs font-bold text-primary-dark">
+                          Upload OG Image
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          1200x630px recommended
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 2 * 1024 * 1024) {
+                                toast.error("File size must be less than 2MB");
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setSettings({
+                                  ...settings,
+                                  seo: {
+                                    ...settings.seo,
+                                    ogImage: reader.result as string,
+                                  },
+                                });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    Image shown when your site is shared on social media (1200x630px)
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6">
+                  <FieldLabel>Social Media Links</FieldLabel>
+                  <div className="space-y-4">
+                    <input
+                      type="url"
+                      className={INPUT_CLASS}
+                      value={settings.socialMedia?.facebook || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          socialMedia: {
+                            ...settings.socialMedia,
+                            facebook: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="Facebook URL"
+                    />
+                    <input
+                      type="url"
+                      className={INPUT_CLASS}
+                      value={settings.socialMedia?.instagram || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          socialMedia: {
+                            ...settings.socialMedia,
+                            instagram: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="Instagram URL"
+                    />
+                    <input
+                      type="url"
+                      className={INPUT_CLASS}
+                      value={settings.socialMedia?.twitter || ""}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          socialMedia: {
+                            ...settings.socialMedia,
+                            twitter: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="Twitter URL"
+                    />
+                  </div>
+                </div>
+              </div>
+            </SettingsCard>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
     </div>
   );
 }

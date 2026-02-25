@@ -17,9 +17,9 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="py-24 bg-[#F8F6F2]">
+    <section className="py-24 bg-[#ece0cc]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative bg-[#2F3E2C] rounded-3xl px-8 py-16 md:p-20 shadow-2xl overflow-hidden">
+        <div className="relative bg-[#234d1b] rounded-3xl px-8 py-16 md:p-20 shadow-2xl overflow-hidden">
           {/* Decorative dot pattern */}
           <div
             className="absolute inset-0 opacity-5"
@@ -30,16 +30,16 @@ export default function Newsletter() {
             }}
           />
           {/* Glow effects */}
-          <div className="absolute -top-20 -right-20 w-60 h-60 bg-[#C6A75E]/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -top-20 -right-20 w-60 h-60 bg-[#f8bf51]/10 rounded-full blur-[80px] pointer-events-none" />
           <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-white/5 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="relative z-10 text-center max-w-xl mx-auto">
             <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-8">
-              <Mail size={26} className="text-[#C6A75E]" />
+              <Mail size={26} className="text-[#f8bf51]" />
             </div>
             <h2 className="text-3xl md:text-4xl font-serif font-black text-white tracking-tight mb-4">
               Join the{" "}
-              <span className="text-[#C6A75E] italic">Tasty World</span> Club
+              <span className="text-[#f8bf51] italic">Tasty World</span> Club
             </h2>
             <p className="text-white/50 text-sm leading-relaxed mb-10 max-w-md mx-auto">
               Get exclusive weekly deals, fresh recipes, and early access to
@@ -51,7 +51,7 @@ export default function Newsletter() {
                 onSubmit={handleSubmit}
                 className="flex flex-col sm:flex-row gap-3"
               >
-                <div className="flex-grow bg-white/10 backdrop-blur-sm rounded-xl border border-white/10 focus-within:border-[#C6A75E]/40 focus-within:bg-white/15 transition-all p-1">
+                <div className="flex-grow bg-white/10 backdrop-blur-sm rounded-xl border border-white/10 focus-within:border-[#f8bf51]/40 focus-within:bg-white/15 transition-all p-1">
                   <input
                     type="email"
                     placeholder="Enter your email address..."
@@ -63,7 +63,7 @@ export default function Newsletter() {
                 </div>
                 <button
                   type="submit"
-                  className="bg-[#C6A75E] text-[#2F3E2C] px-8 py-4 rounded-xl font-bold uppercase tracking-wider text-[11px] hover:bg-[#d4b76e] transition-all shadow-xl shadow-[#C6A75E]/15 flex items-center justify-center gap-2.5 active:scale-95 group shrink-0"
+                  className="bg-[#f8bf51] text-[#234d1b] px-8 py-4 rounded-xl font-bold uppercase tracking-wider text-[11px] hover:bg-[#d4b76e] transition-all shadow-xl shadow-[#f8bf51]/15 flex items-center justify-center gap-2.5 active:scale-95 group shrink-0"
                 >
                   Subscribe{" "}
                   <Send

@@ -65,8 +65,8 @@ export default function AdminLayout({
 
   if (isPending) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#2F3E2C]">
-        <Loader2 className="animate-spin text-[#C6A75E] mb-4" size={48} />
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#234d1b]">
+        <Loader2 className="animate-spin text-[#f8bf51] mb-4" size={48} />
         <p className="text-white/60 font-black uppercase tracking-[0.3em] text-[10px]">
           Verifying credentials...
         </p>
@@ -96,18 +96,18 @@ export default function AdminLayout({
     { href: "/admin/coupons", label: "Promo Codes", icon: Ticket },
 
     { href: "/admin/customers", label: "Customer Base", icon: Users },
-    { href: "/admin/analytics", label: "Business Insights", icon: BarChart3 },
+    // { href: "/admin/analytics", label: "Business Insights", icon: BarChart3 },
     { href: "/admin/enquiries", label: "Event Enquiries", icon: ClipboardList },
     { href: "/admin/legal", label: "Legal Pages", icon: FileText },
   ];
 
   return (
-    <div className="flex h-screen bg-[#F8F6F2] font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#ece0cc] font-sans overflow-hidden">
       <Toaster
         position="top-right"
         toastOptions={{
           style: {
-            background: "#2F3E2C",
+            background: "#234d1b",
             color: "#fff",
             borderRadius: "16px",
             fontSize: "14px",
@@ -116,7 +116,7 @@ export default function AdminLayout({
           },
           success: {
             iconTheme: {
-              primary: "#C6A75E",
+              primary: "#f8bf51",
               secondary: "#fff",
             },
           },
@@ -126,11 +126,11 @@ export default function AdminLayout({
       <motion.aside
         initial={false}
         animate={{ width: isCollapsed ? 80 : 300 }}
-        className="bg-[#2F3E2C] text-white flex flex-col shadow-2xl z-20 relative transition-all duration-300 ease-in-out"
+        className="bg-[#234d1b] text-white flex flex-col shadow-2xl z-20 relative transition-all duration-300 ease-in-out"
       >
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-10 bg-[#C6A75E] text-white p-1 rounded-full shadow-lg hover:scale-110 transition-transform z-30 ring-2 ring-[#F8F6F2]"
+          className="absolute -right-3 top-10 bg-[#f8bf51] text-white p-1 rounded-full shadow-lg hover:scale-110 transition-transform z-30 ring-2 ring-[#ece0cc]"
         >
           {isCollapsed ? (
             <ChevronRight size={14} strokeWidth={3} />
@@ -142,7 +142,7 @@ export default function AdminLayout({
         <div
           className={`flex items-center gap-4 mb-8 p-6 ${isCollapsed ? "justify-center" : ""}`}
         >
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-lg shrink-0 relative">
+          <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-lg shrink-0 relative">
             {settings?.logo ? (
               <Image
                 src={settings.logo}
@@ -152,7 +152,7 @@ export default function AdminLayout({
                 sizes="40px"
               />
             ) : (
-              <span className="text-[#2F3E2C] font-black italic">SN</span>
+              <span className="text-[#234d1b] font-black italic">SN</span>
             )}
           </div>
           {!isCollapsed && (
@@ -162,10 +162,10 @@ export default function AdminLayout({
               exit={{ opacity: 0 }}
               className="whitespace-nowrap overflow-hidden"
             >
-              <h1 className="text-lg font-serif font-black tracking-tight leading-none uppercase text-[#F8F6F2]">
+              <h1 className="text-lg font-serif font-black tracking-tight leading-none uppercase text-[#ece0cc]">
                 {settings?.shopName || "Sai Nandhini"}
               </h1>
-              <p className="text-[9px] text-[#C6A75E] uppercase font-black tracking-[0.2em] mt-1">
+              <p className="text-[9px] text-[#f8bf51] uppercase font-black tracking-[0.2em] mt-1">
                 Admin Portal
               </p>
             </motion.div>
@@ -181,7 +181,7 @@ export default function AdminLayout({
                 href={item.href}
                 className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all group relative ${
                   isActive
-                    ? "bg-[#F8F6F2] text-[#2F3E2C] shadow-lg"
+                    ? "bg-[#ece0cc] text-[#234d1b] shadow-lg"
                     : "text-white/60 hover:text-white hover:bg-white/5"
                 } ${isCollapsed ? "justify-center" : ""}`}
                 title={isCollapsed ? item.label : undefined}
@@ -189,7 +189,7 @@ export default function AdminLayout({
                 <item.icon
                   size={20}
                   strokeWidth={isActive ? 2.5 : 2}
-                  className={`shrink-0 transition-transform ${isActive ? "text-[#2F3E2C]" : "group-hover:scale-110"}`}
+                  className={`shrink-0 transition-transform ${isActive ? "text-[#234d1b]" : "group-hover:scale-110"}`}
                 />
                 {!isCollapsed && (
                   <motion.span
@@ -201,7 +201,7 @@ export default function AdminLayout({
                   </motion.span>
                 )}
                 {isActive && !isCollapsed && (
-                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#C6A75E]" />
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#f8bf51]" />
                 )}
               </Link>
             );
@@ -300,10 +300,10 @@ export default function AdminLayout({
       </motion.aside>
 
       {/* Main Content Area */}
-      <main className="flex-grow overflow-hidden bg-[#F8F6F2] relative h-full">
+      <main className="flex-grow overflow-hidden bg-[#ece0cc] relative h-full">
         <div className="h-full overflow-y-auto">
           {/* Decorative header blur */}
-          <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[#2F3E2C]/5 to-transparent pointer-events-none z-0" />
+          <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[#234d1b]/5 to-transparent pointer-events-none z-0" />
 
           <div className="p-4 md:p-8 lg:p-12 relative z-10 max-w-[1600px] mx-auto pb-20">
             {children}

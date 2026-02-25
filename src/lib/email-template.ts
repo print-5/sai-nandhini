@@ -115,27 +115,27 @@ function buildStatusConfig(
 ): StatusConfig {
   // Default (Pending / Processing / Confirmed)
   const base: StatusConfig = {
-    hdrBg: "#2F3E2C",
+    hdrBg: "#234d1b",
     badgeLabel: "Confirmed",
     badgeStyle:
-      "background:rgba(198,167,94,0.15);color:#C6A75E;border:1px solid rgba(198,167,94,0.3);",
-    badgeColor: "#C6A75E",
+      "background:rgba(198,167,94,0.15);color:#f8bf51;border:1px solid rgba(198,167,94,0.3);",
+    badgeColor: "#f8bf51",
     title: "Thank You for Your Order",
     desc:
       statusMessage ??
       "Your order is in. We're working to get it packed up and out the door — expect a dispatch confirmation email soon.",
     btnText: "View Order",
-    btnBg: "#C6A75E",
-    btnColor: "#2F3E2C",
+    btnBg: "#f8bf51",
+    btnColor: "#234d1b",
     note: "Please allow 24 hours to see tracking information.",
     cardTitle: "📋 Order Summary",
     cardTitleColor: "#9c8141",
     cardBg: "#FAF3E0",
-    cardBorder: "#C6A75E30",
+    cardBorder: "#f8bf5130",
     cardBody:
       "We are confirming your order. You'll receive another email once it's dispatched.",
     progressWidth: "0%",
-    progressColor: "#C6A75E",
+    progressColor: "#f8bf51",
     showProgress: true,
     preheader: `Your order has been confirmed — ${formattedTotal} total. We'll email you when it ships.`,
     emailSubject: "Your Sai Nandhini order is confirmed!",
@@ -196,24 +196,24 @@ function buildStatusConfig(
         hdrBg: "#1A2318",
         badgeLabel: "Out for Delivery",
         badgeStyle:
-          "background:rgba(160,112,80,0.15);color:#C6A75E;border:1px solid rgba(160,112,80,0.3);",
-        badgeColor: "#C6A75E",
+          "background:rgba(160,112,80,0.15);color:#f8bf51;border:1px solid rgba(160,112,80,0.3);",
+        badgeColor: "#f8bf51",
         title: "Almost there — delivery today! 📦",
         desc:
           statusMessage ??
           "Your order is with the delivery driver and will arrive today. Make sure someone is available!",
         btnText: "Live Tracking",
-        btnBg: "#C6A75E",
+        btnBg: "#f8bf51",
         btnColor: "#fff",
         note: "Expected delivery window: Today, 2 PM – 6 PM",
         cardTitle: "⏰ Delivery Window",
-        cardTitleColor: "#2F3E2C",
+        cardTitleColor: "#234d1b",
         cardBg: "#FAF3E0",
-        cardBorder: "#C6A75E30",
+        cardBorder: "#f8bf5130",
         cardBody:
           "Your order is with the courier. If you won't be home, you can redirect your parcel via the tracking link above.",
         progressWidth: "75%",
-        progressColor: "#C6A75E",
+        progressColor: "#f8bf51",
         showProgress: true,
         preheader:
           "Your order is out for delivery — expected today between 2–6 PM!",
@@ -270,8 +270,8 @@ function buildStatusConfig(
           statusMessage ??
           "We're sorry to see this happen. Your order has been cancelled and a full refund is on its way.",
         btnText: "Shop Again",
-        btnBg: "#C6A75E",
-        btnColor: "#2F3E2C",
+        btnBg: "#f8bf51",
+        btnColor: "#234d1b",
         note: "Refund will appear within 3–5 business days",
         cardTitle: "ℹ️ Cancellation Details",
         cardTitleColor: "#b03030",
@@ -353,15 +353,15 @@ function buildLogo(logoText: string): string {
       <tr>
         <td valign="middle" style="padding-right:10px;">
           <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false">
-            <path d="M16 4C13 4 10 6 10 9C10 12 12 13 12 16C12 19 10 21 10 24C10 27 13 28 16 28C19 28 22 27 22 24C22 21 20 19 20 16C20 13 22 12 22 9C22 6 19 4 16 4Z" fill="#C6A75E"/>
-            <circle cx="16" cy="16" r="3" fill="#2F3E2C"/>
-            <path d="M8 16C5 16 4 18 4 20C4 22 6 24 8 24C10 24 11 22 11 20C11 18 10 16 8 16Z" fill="#C6A75E" opacity="0.7"/>
-            <path d="M24 16C27 16 28 18 28 20C28 22 26 24 24 24C22 24 21 22 21 20C21 18 22 16 24 16Z" fill="#C6A75E" opacity="0.7"/>
+            <path d="M16 4C13 4 10 6 10 9C10 12 12 13 12 16C12 19 10 21 10 24C10 27 13 28 16 28C19 28 22 27 22 24C22 21 20 19 20 16C20 13 22 12 22 9C22 6 19 4 16 4Z" fill="#f8bf51"/>
+            <circle cx="16" cy="16" r="3" fill="#234d1b"/>
+            <path d="M8 16C5 16 4 18 4 20C4 22 6 24 8 24C10 24 11 22 11 20C11 18 10 16 8 16Z" fill="#f8bf51" opacity="0.7"/>
+            <path d="M24 16C27 16 28 18 28 20C28 22 26 24 24 24C22 24 21 22 21 20C21 18 22 16 24 16Z" fill="#f8bf51" opacity="0.7"/>
           </svg>
         </td>
         <td valign="middle">
           <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#ffffff;line-height:1;">
-            ${esc(word1)}${accent ? `<span style="color:#C6A75E;">${esc(accent ? " " + accent : "")}</span>` : ""}
+            ${esc(word1)}${accent ? `<span style="color:#f8bf51;">${esc(accent ? " " + accent : "")}</span>` : ""}
           </p>
         </td>
       </tr>
@@ -408,7 +408,7 @@ function buildProgressBar(cfg: StatusConfig): string {
     .map(({ label, state, icon }) => {
       const isDone = state === "done";
       const isActive = state === "active";
-      const borderColor = isDone || isActive ? cfg.progressColor : "#2F3E2C";
+      const borderColor = isDone || isActive ? cfg.progressColor : "#234d1b";
       const bgColor = isDone ? cfg.progressColor : "rgba(0,0,0,0.15)";
       const labelColor = isDone || isActive ? cfg.progressColor : "#b0a99a";
       const fontWeight = isDone || isActive ? "700" : "normal";
@@ -441,7 +441,7 @@ function buildProgressBar(cfg: StatusConfig): string {
         <tr>
           <td colspan="4" style="padding:0;position:relative;height:0;">
             <!-- Track background -->
-            <div style="position:absolute;top:14px;left:24px;right:24px;height:2px;background:#1F2B1D;" aria-hidden="true"></div>
+            <div style="position:absolute;top:14px;left:24px;right:24px;height:2px;background:#234d1b;" aria-hidden="true"></div>
             <!-- Track fill -->
             <div style="position:absolute;top:14px;left:24px;width:${cfg.progressWidth};height:2px;background:${cfg.progressColor};z-index:1;" aria-hidden="true"></div>
           </td>
@@ -481,18 +481,18 @@ function buildOrderMetaCard(
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
            style="background:#1A2318;border-radius:14px;overflow:hidden;margin-bottom:24px;">
       <tr>
-        <td valign="top" width="33%" style="padding:20px 22px;border-right:1px solid #1F2B1D;">
-          <div style="font-size:11px;font-weight:700;color:#C6A75E;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px;">Order</div>
+        <td valign="top" width="33%" style="padding:20px 22px;border-right:1px solid #234d1b;">
+          <div style="font-size:11px;font-weight:700;color:#f8bf51;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px;">Order</div>
           <div style="font-size:14px;font-weight:700;color:#fff;">#${esc(orderId)}</div>
           <div style="font-size:12px;color:#7a7060;margin-top:3px;">${esc(orderDate)}</div>
         </td>
-        <td valign="top" width="33%" style="padding:20px 22px;border-right:1px solid #1F2B1D;">
-          <div style="font-size:11px;font-weight:700;color:#C6A75E;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px;">Ship to</div>
+        <td valign="top" width="33%" style="padding:20px 22px;border-right:1px solid #234d1b;">
+          <div style="font-size:11px;font-weight:700;color:#f8bf51;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px;">Ship to</div>
           <div style="font-size:14px;font-weight:700;color:#fff;">${esc(addr.fullName)}</div>
           <div style="font-size:12px;color:#7a7060;margin-top:3px;line-height:1.5;">${addressLine}</div>
         </td>
         <td valign="top" width="34%" style="padding:20px 22px;">
-          <div style="font-size:11px;font-weight:700;color:#C6A75E;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px;">${isCancelled ? "Refund" : "Total"}</div>
+          <div style="font-size:11px;font-weight:700;color:#f8bf51;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px;">${isCancelled ? "Refund" : "Total"}</div>
           <div style="font-size:14px;font-weight:700;color:${isCancelled ? "#A07050" : "#fff"};">${formattedTotal}</div>
           <div style="font-size:12px;color:#7a7060;margin-top:3px;">${order.orderItems.length} item${order.orderItems.length !== 1 ? "s" : ""}</div>
         </td>
@@ -521,20 +521,20 @@ function buildItemsSection(
                style="display:block;border-radius:8px;font-family:Arial,sans-serif;font-size:10px;color:#999;" />
         </td>
         <td style="padding-bottom:14px;border-bottom:1px solid #E5DDCB;" valign="middle">
-          <div style="font-size:13.5px;font-weight:700;color:#2F3E2C;">${esc(item.name)}</div>
+          <div style="font-size:13.5px;font-weight:700;color:#234d1b;">${esc(item.name)}</div>
           <div style="font-size:12px;color:#999;margin-top:2px;">
             Qty: ${item.qty}${item.uom ? ` &middot; ${esc(item.uom)}` : ""}
           </div>
         </td>
         <td style="padding-bottom:14px;border-bottom:1px solid #E5DDCB;padding-left:14px;" valign="middle" align="right">
-          <div style="font-size:13.5px;font-weight:700;color:#C6A75E;white-space:nowrap;">${fmt(item.price * item.qty)}</div>
+          <div style="font-size:13.5px;font-weight:700;color:#f8bf51;white-space:nowrap;">${fmt(item.price * item.qty)}</div>
         </td>
       </tr>`;
     })
     .join("");
 
   return `
-    <div style="font-size:13px;font-weight:700;color:#2F3E2C;margin-bottom:14px;">${esc(label)}</div>
+    <div style="font-size:13px;font-weight:700;color:#234d1b;margin-bottom:14px;">${esc(label)}</div>
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
       ${rows}
     </table>`;
@@ -544,8 +544,8 @@ function buildTotals(order: Order, fmt: (n: number) => string): string {
   const discountRow =
     (order.discountPrice ?? 0) > 0
       ? `<tr>
-          <td style="padding:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#C6A75E;font-weight:600;">Discount</td>
-          <td align="right" style="padding:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#C6A75E;font-weight:600;">-${fmt(order.discountPrice ?? 0)}</td>
+          <td style="padding:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f8bf51;font-weight:600;">Discount</td>
+          <td align="right" style="padding:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f8bf51;font-weight:600;">-${fmt(order.discountPrice ?? 0)}</td>
         </tr>`
       : "";
 
@@ -562,8 +562,8 @@ function buildTotals(order: Order, fmt: (n: number) => string): string {
         <td align="right" style="padding:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#666;">${fmt(order.shippingPrice)}</td>
       </tr>
       <tr>
-        <td style="padding:14px 0 0;border-top:2px solid #2F3E2C;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:800;color:#2F3E2C;">Total</td>
-        <td align="right" style="padding:14px 0 0;border-top:2px solid #2F3E2C;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:800;color:#2F3E2C;">${fmt(order.totalPrice)}</td>
+        <td style="padding:14px 0 0;border-top:2px solid #234d1b;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:800;color:#234d1b;">Total</td>
+        <td align="right" style="padding:14px 0 0;border-top:2px solid #234d1b;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:800;color:#234d1b;">${fmt(order.totalPrice)}</td>
       </tr>
     </table>`;
 }
@@ -576,12 +576,12 @@ function buildRefundBreakdown(
     (order.discountPrice ?? 0) > 0
       ? `<tr>
           <td style="padding:8px 0;border-bottom:1px solid #E5DDCB;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#555;">Discount Applied</td>
-          <td align="right" style="padding:8px 0;border-bottom:1px solid #E5DDCB;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#C6A75E;">-${fmt(order.discountPrice ?? 0)}</td>
+          <td align="right" style="padding:8px 0;border-bottom:1px solid #E5DDCB;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f8bf51;">-${fmt(order.discountPrice ?? 0)}</td>
         </tr>`
       : "";
 
   return `
-    <div style="font-size:13px;font-weight:700;color:#2F3E2C;margin-bottom:14px;">Refund Breakdown</div>
+    <div style="font-size:13px;font-weight:700;color:#234d1b;margin-bottom:14px;">Refund Breakdown</div>
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
       <tr>
         <td style="padding:8px 0;border-bottom:1px solid #E5DDCB;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#555;">Subtotal</td>
@@ -593,7 +593,7 @@ function buildRefundBreakdown(
         <td align="right" style="padding:8px 0;border-bottom:1px solid #E5DDCB;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#555;">${fmt(order.shippingPrice)}</td>
       </tr>
       <tr>
-        <td style="padding:14px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:800;color:#2F3E2C;">Total Refunded</td>
+        <td style="padding:14px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:800;color:#234d1b;">Total Refunded</td>
         <td align="right" style="padding:14px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:800;color:#A07050;">${fmt(order.totalPrice)}</td>
       </tr>
     </table>
@@ -602,7 +602,7 @@ function buildRefundBreakdown(
 
 function buildSupportCards(email: string, phone: string): string {
   return `
-    <div style="font-size:13px;font-weight:700;color:#2F3E2C;margin-bottom:14px;">Need help with your order?</div>
+    <div style="font-size:13px;font-weight:700;color:#234d1b;margin-bottom:14px;">Need help with your order?</div>
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
       <tr>
         <td width="48%" valign="top" style="padding-right:8px;">
@@ -614,12 +614,12 @@ function buildSupportCards(email: string, phone: string): string {
                   <tr>
                     <td width="46" valign="middle" style="padding-right:12px;">
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="34" height="34"
-                             style="background:#2F3E2C;border-radius:50%;">
+                             style="background:#234d1b;border-radius:50%;">
                         <tr><td align="center" valign="middle" style="font-size:14px;color:#fff;" aria-hidden="true">&#9993;</td></tr>
                       </table>
                     </td>
                     <td valign="middle">
-                      <div style="font-size:13px;font-weight:700;color:#2F3E2C;">Email Us</div>
+                      <div style="font-size:13px;font-weight:700;color:#234d1b;">Email Us</div>
                       <a href="mailto:${esc(email)}" style="font-size:11.5px;color:#999;text-decoration:none;">${esc(email)}</a>
                     </td>
                   </tr>
@@ -638,12 +638,12 @@ function buildSupportCards(email: string, phone: string): string {
                   <tr>
                     <td width="46" valign="middle" style="padding-right:12px;">
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="34" height="34"
-                             style="background:#2F3E2C;border-radius:50%;">
+                             style="background:#234d1b;border-radius:50%;">
                         <tr><td align="center" valign="middle" style="font-size:14px;color:#fff;" aria-hidden="true">&#128222;</td></tr>
                       </table>
                     </td>
                     <td valign="middle">
-                      <div style="font-size:13px;font-weight:700;color:#2F3E2C;">Call Us</div>
+                      <div style="font-size:13px;font-weight:700;color:#234d1b;">Call Us</div>
                       <a href="tel:${esc(phone.replace(/\s/g, ""))}" style="font-size:11.5px;color:#999;text-decoration:none;">${esc(phone)}</a>
                     </td>
                   </tr>
@@ -663,15 +663,15 @@ function buildBusinessStrip(email: string): string {
         <tr>
           <td width="66" valign="middle" style="padding-right:16px;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="50" height="50"
-                   style="background:#2F3E2C;border-radius:50%;">
+                   style="background:#234d1b;border-radius:50%;">
               <tr><td align="center" valign="middle" style="font-size:20px;color:#fff;" aria-hidden="true">&#9993;</td></tr>
             </table>
           </td>
           <td valign="middle">
-            <div style="font-size:14px;font-weight:700;color:#2F3E2C;margin-bottom:3px;">Want to talk business with us?</div>
+            <div style="font-size:14px;font-weight:700;color:#234d1b;margin-bottom:3px;">Want to talk business with us?</div>
             <div style="font-size:12px;color:#7a7060;line-height:1.55;">
               Reach out at
-              <a href="mailto:${esc(email)}" style="color:#2F3E2C;font-weight:700;text-decoration:none;">${esc(email)}</a>
+              <a href="mailto:${esc(email)}" style="color:#234d1b;font-weight:700;text-decoration:none;">${esc(email)}</a>
               &mdash; we open opportunities for all forms of collaboration.
             </div>
           </td>
@@ -683,7 +683,7 @@ function buildBusinessStrip(email: string): string {
 function buildFooter(settings: ResolvedSettings, domain: string): string {
   const year = new Date().getFullYear();
   return `
-    <div style="background:#2F3E2C;padding:28px 40px 32px;text-align:center;">
+    <div style="background:#234d1b;padding:28px 40px 32px;text-align:center;">
       <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:16px;">
         ${esc(settings.logoText)}
       </div>
@@ -691,11 +691,11 @@ function buildFooter(settings: ResolvedSettings, domain: string): string {
         ${esc(settings.address)}<br/>${esc(settings.city)}
       </div>
       <div style="font-size:11.5px;margin-bottom:12px;">
-        <a href="${esc(domain)}/unsubscribe" target="_blank" style="color:#C6A75E;text-decoration:underline;">Unsubscribe</a>
+        <a href="${esc(domain)}/unsubscribe" target="_blank" style="color:#f8bf51;text-decoration:underline;">Unsubscribe</a>
         <span style="color:#6b6256;">&nbsp;&bull;&nbsp;</span>
-        <a href="${esc(domain)}/privacy" target="_blank" style="color:#C6A75E;text-decoration:underline;">Privacy Policy</a>
+        <a href="${esc(domain)}/privacy" target="_blank" style="color:#f8bf51;text-decoration:underline;">Privacy Policy</a>
         <span style="color:#6b6256;">&nbsp;&bull;&nbsp;</span>
-        <a href="${esc(domain)}/terms" target="_blank" style="color:#C6A75E;text-decoration:underline;">Terms</a>
+        <a href="${esc(domain)}/terms" target="_blank" style="color:#f8bf51;text-decoration:underline;">Terms</a>
       </div>
       <div style="font-size:11px;color:#6b6256;line-height:1.6;">
         You received this email because you placed an order at ${esc(settings.shopName)}.<br/>
@@ -754,7 +754,7 @@ function buildHeadStyles(): string {
     /* ── Mobile ── */
     @media only screen and (max-width:600px){
       .ec{width:100%!important;max-width:100%!important;}
-      .stack-col{display:block!important;width:100%!important;max-width:100%!important;border-right:none!important;border-bottom:1px solid #1F2B1D!important;}
+      .stack-col{display:block!important;width:100%!important;max-width:100%!important;border-right:none!important;border-bottom:1px solid #234d1b!important;}
       .hide-mobile{display:none!important;max-height:0!important;overflow:hidden!important;mso-hide:all!important;}
       .px-mobile{padding-left:20px!important;padding-right:20px!important;}
       .h1-mobile{font-size:26px!important;}
@@ -765,7 +765,7 @@ function buildHeadStyles(): string {
       body,.outer-bg{background-color:#111!important;}
       .dark-white{background-color:#1e1b16!important;}
       .dark-cream{background-color:#201c14!important;}
-      .dark-text{color:#F8F6F2!important;}
+      .dark-text{color:#ece0cc!important;}
       .dark-muted{color:#6b6256!important;}
       .dark-divider{border-color:#2e2820!important;}
     }
@@ -846,12 +846,12 @@ export function getEmailTemplate(
   <xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
   <![endif]-->
 </head>
-<body id="body" style="margin:0;padding:0;background-color:#F8F6F2;word-spacing:normal;" class="outer-bg">
+<body id="body" style="margin:0;padding:0;background-color:#ece0cc;word-spacing:normal;" class="outer-bg">
 
   ${buildPreheader(cfg.preheader)}
 
   <!-- Outer wrapper -->
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#F8F6F2;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#ece0cc;">
     <tr>
       <td align="center" valign="top" style="padding:28px 10px;">
 
@@ -973,7 +973,7 @@ export function getEmailTemplate(
 
 
           <!-- ── ZIGZAG cream → dark ────────────────────────────── -->
-          <tr><td style="padding:0;font-size:0;line-height:0;">${buildZigzag("#FDF9EB", "#2F3E2C", "up")}</td></tr>
+          <tr><td style="padding:0;font-size:0;line-height:0;">${buildZigzag("#FDF9EB", "#234d1b", "up")}</td></tr>
 
 
           <!-- ── FOOTER ─────────────────────────────────────────── -->

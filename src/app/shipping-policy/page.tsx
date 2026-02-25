@@ -1,5 +1,5 @@
-import GenericPageComponent from "@/components/GenericPage";
+import { redirect } from "next/navigation";
 
 export default function ShippingPolicyPage() {
-  return <GenericPageComponent slug="shipping-policy" />;
+  redirect("/legal/shipping");
 }

@@ -5,7 +5,6 @@ import Image from "next/image";
 import {
   ShoppingCart,
   User,
-  Search,
   Menu,
   X,
   ChevronDown,
@@ -21,12 +20,13 @@ import { authClient } from "@/lib/auth-client";
 import CartDrawer from "./CartDrawer";
 import { useCart } from "@/context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
   const { data: session } = authClient.useSession();
   const { cartCount } = useCart();
   const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,6 +36,12 @@ export default function Navbar() {
   >([]);
 
   const [settings, setSettings] = useState<any>(null);
+
+  // Helper function to check if a link is active
+  const isActive = (path: string) => {
+    if (path === "/") return pathname === "/";
+    return pathname?.startsWith(path);
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -66,14 +72,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
-
   return (
     <>
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
@@ -81,24 +79,24 @@ export default function Navbar() {
       <div className={`fixed w-full z-50 transition-all duration-300`}>
         {/* Top Bar */}
         {!isScrolled && (
-          <div className="bg-[#1f2b1d] text-white/70 py-2 border-b border-white/5">
+          <div className="bg-[#234d1b] text-white/70 py-2 border-b border-white/5">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-2 text-[10px] font-medium uppercase tracking-widest">
               <div className="flex items-center gap-6">
                 {settings?.contactPhone && (
                   <a
                     href={`tel:${settings.contactPhone}`}
-                    className="hover:text-[#C6A75E] transition-colors flex items-center gap-2"
+                    className="hover:text-[#f8bf51] transition-colors flex items-center gap-2"
                   >
-                    <Phone size={12} className="text-[#C6A75E]" />{" "}
+                    <Phone size={12} className="text-[#f8bf51]" />{" "}
                     {settings.contactPhone}
                   </a>
                 )}
                 {settings?.contactEmail && (
                   <a
                     href={`mailto:${settings.contactEmail}`}
-                    className="hidden sm:flex hover:text-[#C6A75E] transition-colors items-center gap-2"
+                    className="hidden sm:flex hover:text-[#f8bf51] transition-colors items-center gap-2"
                   >
-                    <Mail size={12} className="text-[#C6A75E]" />{" "}
+                    <Mail size={12} className="text-[#f8bf51]" />{" "}
                     {settings.contactEmail}
                   </a>
                 )}
@@ -111,7 +109,7 @@ export default function Navbar() {
                     href={settings.socialMedia.facebook}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-[#C6A75E] transition-colors"
+                    className="hover:text-[#f8bf51] transition-colors"
                   >
                     <Facebook size={14} />
                   </a>
@@ -121,7 +119,7 @@ export default function Navbar() {
                     href={settings.socialMedia.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-[#C6A75E] transition-colors"
+                    className="hover:text-[#f8bf51] transition-colors"
                   >
                     <Instagram size={14} />
                   </a>
@@ -131,7 +129,7 @@ export default function Navbar() {
                     href={settings.socialMedia.twitter}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-[#C6A75E] transition-colors"
+                    className="hover:text-[#f8bf51] transition-colors"
                   >
                     <Twitter size={14} />
                   </a>
@@ -144,8 +142,8 @@ export default function Navbar() {
         <nav
           className={`transition-all duration-300 ${
             isScrolled
-              ? "bg-[#2F3E2C]/95 backdrop-blur-md shadow-xl py-2"
-              : "bg-[#2F3E2C] py-4"
+              ? "bg-[#234d1b]/95 backdrop-blur-md shadow-xl py-2"
+              : "bg-[#234d1b] py-4"
           }`}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -161,7 +159,7 @@ export default function Navbar() {
               {/* Brand Logo */}
               <Link href="/" className="flex flex-col items-center group">
                 {settings?.logo ? (
-                  <div className="h-10 md:h-12 w-48 relative">
+                  <div className="h-16 md:h-20 lg:h-24 w-64 md:w-80 lg:w-96 relative">
                     <Image
                       src={settings.logo}
                       alt={settings.shopName || "Sai Nandhini"}
@@ -172,11 +170,20 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <>
-                    <span className="text-2xl md:text-3xl font-serif font-black text-white tracking-normal leading-none group-hover:text-[#C6A75E] transition-colors">
-                      Sai Nandhini
+                    <span className="text-2xl md:text-3xl font-serif font-black text-white tracking-normal leading-none group-hover:text-[#f8bf51] transition-colors">
+                      {settings?.shopName?.split(" ").slice(0, 2).join(" ") ||
+                        "Sai Nandhini"}
                     </span>
-                    <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#C6A75E] leading-none mt-1">
-                      Tasty World – Madurai
+                    <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#f8bf51] leading-none mt-1">
+                      {settings?.shopName?.split(" ").slice(2).join(" ") ||
+                        "Tasty World"}{" "}
+                      {settings?.address
+                        ?.split(",")
+                        .slice(-2, -1)[0]
+                        ?.trim()
+                        .includes("Madurai")
+                        ? "– Madurai"
+                        : ""}
                     </span>
                   </>
                 )}
@@ -185,7 +192,7 @@ export default function Navbar() {
               {/* Desktop Navigation */}
               <div className="hidden lg:flex items-center gap-8">
                 <div className="relative group">
-                  <button className="flex items-center gap-1 text-[13px] font-semibold text-white/80 hover:text-[#C6A75E] transition-colors">
+                  <button className="flex items-center gap-1 text-[13px] font-semibold text-white/80 hover:text-[#f8bf51] transition-colors">
                     Shop Categories{" "}
                     <ChevronDown
                       size={14}
@@ -193,13 +200,13 @@ export default function Navbar() {
                     />
                   </button>
                   <div className="absolute top-full -left-4 w-56 pt-6 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all">
-                    <div className="bg-white rounded-xl shadow-xl overflow-hidden py-2 ring-1 ring-[#2F3E2C]/5">
+                    <div className="bg-white rounded-xl shadow-xl overflow-hidden py-2 ring-1 ring-[#234d1b]/5">
                       {categories.length > 0 ? (
                         categories.map((cat) => (
                           <Link
                             key={cat._id}
                             href={`/shop?category=${encodeURIComponent(cat.name)}`}
-                            className="block px-6 py-2.5 text-sm font-bold text-[#2F3E2C]/70 hover:bg-[#F8F6F2] hover:text-[#2F3E2C] transition-colors"
+                            className="block px-6 py-2.5 text-sm font-bold text-[#234d1b]/70 hover:bg-[#ece0cc] hover:text-[#234d1b] transition-colors"
                           >
                             {cat.name}
                           </Link>
@@ -214,19 +221,31 @@ export default function Navbar() {
                 </div>
                 <Link
                   href="/shop"
-                  className="text-[13px] font-semibold text-white/80 hover:text-[#C6A75E] transition-colors"
+                  className={`text-[13px] font-semibold transition-colors ${
+                    isActive("/shop")
+                      ? "text-[#f8bf51]"
+                      : "text-white/80 hover:text-[#f8bf51]"
+                  }`}
                 >
                   All Products
                 </Link>
                 <Link
-                  href="/shop?category=Combos"
-                  className="text-[13px] font-semibold text-[#C6A75E] hover:text-white transition-colors"
+                  href="/about"
+                  className={`text-[13px] font-semibold transition-colors ${
+                    isActive("/about")
+                      ? "text-[#f8bf51]"
+                      : "text-white/80 hover:text-[#f8bf51]"
+                  }`}
                 >
-                  Combos
+                  About Us
                 </Link>
                 <Link
                   href="/contact"
-                  className="text-[13px] font-semibold text-white/80 hover:text-[#C6A75E] transition-colors"
+                  className={`text-[13px] font-semibold transition-colors ${
+                    isActive("/contact")
+                      ? "text-[#f8bf51]"
+                      : "text-white/80 hover:text-[#f8bf51]"
+                  }`}
                 >
                   Corporate Orders
                 </Link>
@@ -234,9 +253,6 @@ export default function Navbar() {
 
               {/* Action Icons */}
               <div className="flex items-center gap-2 md:gap-4">
-                <button className="hidden sm:block p-2 text-white/70 hover:text-[#C6A75E] transition-colors">
-                  <Search size={20} />
-                </button>
                 {session ? (
                   <Link
                     href={
@@ -246,25 +262,25 @@ export default function Navbar() {
                           ? "/orders"
                           : "/login"
                     }
-                    className="p-2 text-white/70 hover:text-[#C6A75E] transition-colors"
+                    className="p-2 text-white/70 hover:text-[#f8bf51] transition-colors"
                   >
                     <User size={20} />
                   </Link>
                 ) : (
                   <Link
                     href="/login"
-                    className="p-2 text-white/70 hover:text-[#C6A75E] transition-colors"
+                    className="p-2 text-white/70 hover:text-[#f8bf51] transition-colors"
                   >
                     <User size={20} />
                   </Link>
                 )}
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="p-2 text-white/70 hover:text-[#C6A75E] relative group transition-colors"
+                  className="p-2 text-white/70 hover:text-[#f8bf51] relative group transition-colors"
                 >
                   <ShoppingCart size={20} />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#C6A75E] text-[#2F3E2C] text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                    <span className="absolute -top-1 -right-1 bg-[#f8bf51] text-[#234d1b] text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
                       {cartCount}
                     </span>
                   )}
@@ -296,7 +312,7 @@ export default function Navbar() {
               <div className="flex justify-between items-center mb-12">
                 <div className="flex flex-col">
                   {settings?.logo ? (
-                    <div className="h-10 w-40 relative mb-2">
+                    <div className="h-16 w-64 relative mb-2">
                       <Image
                         src={settings.logo}
                         alt={settings.shopName || "Sai Nandhini"}
@@ -306,18 +322,20 @@ export default function Navbar() {
                     </div>
                   ) : (
                     <>
-                      <span className="text-xl font-serif font-black text-[#2F3E2C] tracking-tighter">
-                        Sai Nandhini
+                      <span className="text-xl font-serif font-black text-[#234d1b] tracking-tighter">
+                        {settings?.shopName?.split(" ").slice(0, 2).join(" ") ||
+                          "Sai Nandhini"}
                       </span>
-                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#C6A75E]">
-                        Tasty World
+                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#f8bf51]">
+                        {settings?.shopName?.split(" ").slice(2).join(" ") ||
+                          "Tasty World"}
                       </span>
                     </>
                   )}
                 </div>
                 <button
                   onClick={() => setIsMenuOpen(false)}
-                  className="p-2 text-gray-400 hover:text-[#2F3E2C] transition-colors"
+                  className="p-2 text-gray-400 hover:text-[#234d1b] transition-colors"
                 >
                   <X size={24} />
                 </button>
@@ -330,21 +348,34 @@ export default function Navbar() {
                   </p>
                   <Link
                     href="/shop"
-                    className="block text-xl font-bold text-[#2F3E2C]"
+                    className={`block text-xl font-bold ${
+                      isActive("/shop") ? "text-[#f8bf51]" : "text-[#234d1b]"
+                    }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Shop All
                   </Link>
                   <Link
                     href="/shop?category=Combos"
-                    className="block text-xl font-bold text-[#C6A75E]"
+                    className="block text-xl font-bold text-[#234d1b]"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Combo Offers
                   </Link>
                   <Link
+                    href="/about"
+                    className={`block text-xl font-bold ${
+                      isActive("/about") ? "text-[#f8bf51]" : "text-[#234d1b]"
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    About Us
+                  </Link>
+                  <Link
                     href="/contact"
-                    className="block text-xl font-bold text-[#2F3E2C]"
+                    className={`block text-xl font-bold ${
+                      isActive("/contact") ? "text-[#f8bf51]" : "text-[#234d1b]"
+                    }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Corporate Orders
@@ -360,7 +391,7 @@ export default function Navbar() {
                       <Link
                         key={cat._id}
                         href={`/shop?category=${encodeURIComponent(cat.name)}`}
-                        className="block text-lg font-medium text-gray-500 hover:text-[#2F3E2C] transition-colors"
+                        className="block text-lg font-medium text-gray-500 hover:text-[#234d1b] transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         {cat.name}
@@ -377,7 +408,7 @@ export default function Navbar() {
               <div className="pt-8 border-t border-gray-100 flex flex-col gap-4">
                 <Link
                   href={session ? "/admin/dashboard" : "/login"}
-                  className="flex items-center gap-3 text-[#2F3E2C] font-bold"
+                  className="flex items-center gap-3 text-[#234d1b] font-bold"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <User size={20} />{" "}
@@ -385,7 +416,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/checkout"
-                  className="flex items-center gap-3 text-[#2F3E2C] font-bold"
+                  className="flex items-center gap-3 text-[#234d1b] font-bold"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Package size={20} /> Track Orders

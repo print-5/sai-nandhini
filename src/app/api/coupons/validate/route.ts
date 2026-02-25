@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Coupon from "@/models/Coupon";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 /**
  * POST /api/coupons/validate
@@ -18,6 +20,13 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
+
+    // Get user session
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    const userId = session?.user?.id;
 
     // Find coupon by code
     const coupon = await Coupon.findOne({
@@ -46,6 +55,23 @@ export async function POST(req: Request) {
         { error: "Coupon usage limit reached" },
         { status: 400 },
       );
+    }
+
+    // Check per-user limit
+    if (userId && coupon.perUserLimit) {
+      const userUsage = coupon.usedByUsers?.find(
+        (u: any) => u.userId.toString() === userId
+      );
+      const userCount = userUsage?.count || 0;
+
+      if (userCount >= coupon.perUserLimit) {
+        return NextResponse.json(
+          {
+            error: `You have already used this coupon ${coupon.perUserLimit} time${coupon.perUserLimit > 1 ? "s" : ""}`,
+          },
+          { status: 400 },
+        );
+      }
     }
 
     // Check minimum order amount

@@ -242,8 +242,10 @@ export default function CheckoutClient({
         key: rzpOrder.key, // Use key from backend response
         amount: rzpOrder.amount,
         currency: rzpOrder.currency,
-        name: "Sai Nandhini Tasty World",
-        description: "Authentic South Indian Delicacies",
+        name: initialSettings?.shopName || "Sai Nandhini Tasty World",
+        description:
+          initialSettings?.seo?.metaDescription ||
+          "Authentic South Indian Delicacies",
         order_id: rzpOrder.id,
         handler: async function (response: any) {
           const verifyRes = await fetch("/api/payments/verify", {
@@ -272,7 +274,7 @@ export default function CheckoutClient({
           email: address.email,
           contact: address.phone,
         },
-        theme: { color: "#800000" },
+        theme: { color: "#234d1b" },
         modal: {
           ondismiss: function () {
             setLoading(false);
@@ -712,7 +714,7 @@ export default function CheckoutClient({
               className="bg-white rounded-2xl shadow-xl border border-gray-100 sticky top-24 overflow-hidden"
             >
               {/* Summary Header with Gradient */}
-              <div className="bg-gradient-to-r from-[#C6A75E] to-[#d4b876] px-8 py-6">
+              <div className="bg-gradient-to-r from-[#f8bf51] to-[#d4b876] px-8 py-6">
                 <h2 className="text-xl font-bold text-white">Order Summary</h2>
                 <p className="text-white/80 text-sm mt-1">
                   {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
@@ -874,7 +876,7 @@ export default function CheckoutClient({
                                   key={coupon._id}
                                   onClick={() => applyCouponCode(coupon.code)}
                                   disabled={loading}
-                                  className="group bg-[#F8F6F2] hover:bg-primary/5 border border-gray-200 hover:border-primary/30 py-2 px-3 rounded-xl transition-all text-left disabled:opacity-50"
+                                  className="group bg-[#ece0cc] hover:bg-primary/5 border border-gray-200 hover:border-primary/30 py-2 px-3 rounded-xl transition-all text-left disabled:opacity-50"
                                 >
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className="text-xs font-bold text-primary tracking-wider uppercase">

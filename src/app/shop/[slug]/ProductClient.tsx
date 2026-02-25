@@ -634,7 +634,7 @@ export default function ProductClient({
                               <Star
                                 size={28}
                                 fill={
-                                  star <= newReviewRating ? "#C6A75E" : "none"
+                                  star <= newReviewRating ? "#f8bf51" : "none"
                                 }
                                 className={
                                   star <= newReviewRating

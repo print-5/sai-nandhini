@@ -1,5 +1,5 @@
-import GenericPageComponent from "@/components/GenericPage";
+import { redirect } from "next/navigation";
 
-export default function ReturnAndRefundPage() {
-  return <GenericPageComponent slug="return-and-refund" />;
+export default function ReturnRefundPage() {
+  redirect("/legal/returns");
 }

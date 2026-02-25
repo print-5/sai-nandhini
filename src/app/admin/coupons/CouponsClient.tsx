@@ -49,6 +49,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
     description: string;
     maxDiscountAmount?: number;
     usageLimit?: number;
+    perUserLimit?: number;
     expiresAt?: string;
   }>({
     code: "",
@@ -60,6 +61,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
     description: "",
     maxDiscountAmount: 0,
     usageLimit: undefined,
+    perUserLimit: undefined,
   });
 
   const [bulkData, setBulkData] = useState({
@@ -71,6 +73,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
     isActive: true,
     displayInCheckout: true,
     usageLimit: 1,
+    perUserLimit: 1,
   });
 
   const fetchCoupons = async () => {
@@ -127,6 +130,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
           minOrderValue: currentCoupon.minOrderValue,
           maxDiscountAmount: currentCoupon.maxDiscountAmount || undefined,
           usageLimit: currentCoupon.usageLimit || undefined,
+          perUserLimit: currentCoupon.perUserLimit || undefined,
           expiresAt: currentCoupon.expiresAt
             ? new Date(currentCoupon.expiresAt)
             : undefined,
@@ -167,6 +171,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
       isActive: bulkData.isActive,
       displayInCheckout: bulkData.displayInCheckout,
       usageLimit: bulkData.usageLimit,
+      perUserLimit: bulkData.perUserLimit,
       description: `Bulk generated coupon`,
     }));
 
@@ -222,6 +227,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
       description: "",
       maxDiscountAmount: 0,
       usageLimit: undefined,
+      perUserLimit: undefined,
       expiresAt: "",
     });
     setIsDialogOpen(true);
@@ -239,6 +245,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
       description: coupon.description || "",
       maxDiscountAmount: coupon.maxDiscountAmount || 0,
       usageLimit: coupon.usageLimit,
+      perUserLimit: coupon.perUserLimit,
       expiresAt: coupon.expiresAt
         ? new Date(coupon.expiresAt).toISOString().split("T")[0]
         : "",
@@ -418,7 +425,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                           </>
                         ) : coupon.discountType === "fixed" ? (
                           <>
-                            <IndianRupee size={16} className="text-[#C6A75E]" />
+                            <IndianRupee size={16} className="text-[#f8bf51]" />
                             {coupon.discountValue}
                           </>
                         ) : (
@@ -440,20 +447,32 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-50 flex justify-between items-center text-xs font-medium text-gray-500">
-                    <div className="flex items-center gap-1.5">
-                      <Activity size={14} className="text-gray-300" />
-                      Used: {coupon.usedCount || 0} / {coupon.usageLimit || "∞"}
+                  <div className="pt-4 border-t border-gray-50 space-y-2">
+                    <div className="flex justify-between items-center text-xs font-medium text-gray-500">
+                      <div className="flex items-center gap-1.5">
+                        <Activity size={14} className="text-gray-300" />
+                        Total Used: {coupon.usedCount || 0} / {coupon.usageLimit || "∞"}
+                      </div>
+                      {coupon.expiresAt && (
+                        <div className="flex items-center gap-1.5 text-orange-500/80">
+                          <Calendar size={14} />
+                          {mounted
+                            ? new Date(coupon.expiresAt).toLocaleDateString(
+                                undefined,
+                                { day: "numeric", month: "short" },
+                              )
+                            : "..."}
+                        </div>
+                      )}
                     </div>
-                    {coupon.expiresAt && (
-                      <div className="flex items-center gap-1.5 text-orange-500/80">
-                        <Calendar size={14} />
-                        {mounted
-                          ? new Date(coupon.expiresAt).toLocaleDateString(
-                              undefined,
-                              { day: "numeric", month: "short" },
-                            )
-                          : "..."}
+                    {coupon.perUserLimit && (
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400">
+                        <span className="text-[9px] font-black uppercase tracking-widest">
+                          Per User:
+                        </span>
+                        <span className="text-gray-600">
+                          {coupon.perUserLimit} use{coupon.perUserLimit > 1 ? 's' : ''} max
+                        </span>
                       </div>
                     )}
                   </div>
@@ -481,7 +500,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden relative"
               >
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-[#F8F6F2]">
+                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-[#ece0cc]">
                   <div>
                     <h2 className="text-2xl font-serif font-black text-primary-dark">
                       {currentCoupon._id ? "Edit Coupon" : "Create New Coupon"}
@@ -519,7 +538,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                               code: e.target.value.toUpperCase(),
                             })
                           }
-                          className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-black text-lg uppercase tracking-wider text-primary-dark placeholder:text-gray-300"
+                          className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-black text-lg uppercase tracking-wider text-primary-dark placeholder:text-gray-300"
                           placeholder="SUMMER2026"
                         />
                         <Ticket
@@ -542,7 +561,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                               discountType: e.target.value,
                             })
                           }
-                          className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-medium text-gray-700 appearance-none cursor-pointer"
+                          className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-medium text-gray-700 appearance-none cursor-pointer"
                         >
                           <option value="percentage">Percentage (%)</option>
                           <option value="fixed">Fixed Amount (₹)</option>
@@ -573,7 +592,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                                   discountValue: Number(e.target.value),
                                 })
                               }
-                              className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-gray-700"
+                              className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-gray-700"
                               placeholder="20"
                             />
                           </div>
@@ -581,30 +600,31 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                          Min. Order Value
-                        </label>
-                        <div className="relative">
-                          <IndianRupee
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                            size={16}
-                          />
-                          <input
-                            type="number"
-                            value={currentCoupon.minOrderValue || ""}
-                            onChange={(e) =>
-                              setCurrentCoupon({
-                                ...currentCoupon,
-                                minOrderValue: Number(e.target.value),
-                              })
-                            }
-                            className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-gray-700"
-                            placeholder="0"
-                          />
-                        </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                        Min. Order Value
+                      </label>
+                      <div className="relative">
+                        <IndianRupee
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                          size={16}
+                        />
+                        <input
+                          type="number"
+                          value={currentCoupon.minOrderValue || ""}
+                          onChange={(e) =>
+                            setCurrentCoupon({
+                              ...currentCoupon,
+                              minOrderValue: Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-gray-700"
+                          placeholder="0"
+                        />
                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
                           Usage Limit
@@ -620,7 +640,26 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                                 : undefined,
                             })
                           }
-                          className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
+                          className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
+                          placeholder="∞"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                          Per User Limit
+                        </label>
+                        <input
+                          type="number"
+                          value={currentCoupon.perUserLimit || ""}
+                          onChange={(e) =>
+                            setCurrentCoupon({
+                              ...currentCoupon,
+                              perUserLimit: e.target.value
+                                ? Number(e.target.value)
+                                : undefined,
+                            })
+                          }
+                          className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
                           placeholder="∞"
                         />
                       </div>
@@ -647,7 +686,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                                   : undefined,
                               })
                             }
-                            className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-gray-700"
+                            className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-gray-700"
                             placeholder="No limit"
                           />
                         </div>
@@ -667,7 +706,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                             expiresAt: e.target.value,
                           })
                         }
-                        className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
+                        className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
                       />
                     </div>
 
@@ -684,13 +723,13 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                             description: e.target.value,
                           })
                         }
-                        className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
+                        className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
                         placeholder="E.g. Diwali Special"
                       />
                     </div>
 
                     <div className="flex gap-4">
-                      <label className="flex items-center gap-3 bg-[#F8F6F2] py-4 px-6 rounded-2xl cursor-pointer flex-1 border border-transparent hover:border-primary/10 transition-colors">
+                      <label className="flex items-center gap-3 bg-[#ece0cc] py-4 px-6 rounded-2xl cursor-pointer flex-1 border border-transparent hover:border-primary/10 transition-colors">
                         <input
                           type="checkbox"
                           checked={currentCoupon.isActive}
@@ -707,7 +746,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                         </span>
                       </label>
 
-                      <label className="flex items-center gap-3 bg-[#F8F6F2] py-4 px-6 rounded-2xl cursor-pointer flex-1 border border-transparent hover:border-primary/10 transition-colors">
+                      <label className="flex items-center gap-3 bg-[#ece0cc] py-4 px-6 rounded-2xl cursor-pointer flex-1 border border-transparent hover:border-primary/10 transition-colors">
                         <input
                           type="checkbox"
                           checked={currentCoupon.displayInCheckout}
@@ -759,7 +798,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg flex flex-col overflow-hidden relative"
               >
-                <div className="p-8 border-b border-gray-100 bg-[#F8F6F2] flex items-center justify-between">
+                <div className="p-8 border-b border-gray-100 bg-[#ece0cc] flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-serif font-black text-primary-dark flex items-center gap-2">
                       <Settings2 size={24} className="text-primary" /> Bulk
@@ -800,7 +839,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                               count: Number(e.target.value),
                             })
                           }
-                          className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
+                          className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
                         />
                       </div>
                       <div className="space-y-2">
@@ -816,7 +855,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                               prefix: e.target.value.toUpperCase(),
                             })
                           }
-                          className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-black uppercase text-primary-dark"
+                          className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-black uppercase text-primary-dark"
                           placeholder="E.g. NEW"
                         />
                       </div>
@@ -834,7 +873,7 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                             discountType: e.target.value,
                           })
                         }
-                        className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-medium text-gray-700 appearance-none cursor-pointer"
+                        className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-medium text-gray-700 appearance-none cursor-pointer"
                       >
                         <option value="percentage">Percentage (%)</option>
                         <option value="fixed">Fixed Amount (₹)</option>
@@ -865,29 +904,30 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                                 discountValue: Number(e.target.value),
                               })
                             }
-                            className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-gray-700"
+                            className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 pl-12 pr-6 outline-none transition-all font-bold text-gray-700"
                           />
                         </div>
                       </div>
                     )}
 
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                        Min. Order (₹)
+                      </label>
+                      <input
+                        type="number"
+                        value={bulkData.minOrderValue}
+                        onChange={(e) =>
+                          setBulkData({
+                            ...bulkData,
+                            minOrderValue: Number(e.target.value),
+                          })
+                        }
+                        className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
+                      />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                          Min. Order (₹)
-                        </label>
-                        <input
-                          type="number"
-                          value={bulkData.minOrderValue}
-                          onChange={(e) =>
-                            setBulkData({
-                              ...bulkData,
-                              minOrderValue: Number(e.target.value),
-                            })
-                          }
-                          className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
-                        />
-                      </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
                           Usage Limit
@@ -902,7 +942,24 @@ export default function CouponsClient({ initialData }: { initialData: any[] }) {
                               usageLimit: Number(e.target.value),
                             })
                           }
-                          className="w-full bg-[#F8F6F2] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
+                          className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                          Per User Limit
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={bulkData.perUserLimit}
+                          onChange={(e) =>
+                            setBulkData({
+                              ...bulkData,
+                              perUserLimit: Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-[#ece0cc] border-none focus:ring-2 focus:ring-primary/20 rounded-2xl py-4 px-6 outline-none transition-all font-bold text-gray-700"
                         />
                       </div>
                     </div>

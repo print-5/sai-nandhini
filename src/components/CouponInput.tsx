@@ -119,13 +119,13 @@ export default function CouponInput({
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
             disabled={loading}
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 bg-white text-sm outline-none focus:border-[#C6A75E] focus:ring-2 focus:ring-[#C6A75E]/20 transition-all disabled:opacity-50"
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 bg-white text-sm outline-none focus:border-[#f8bf51] focus:ring-2 focus:ring-[#f8bf51]/20 transition-all disabled:opacity-50"
           />
         </div>
         <button
           type="submit"
           disabled={!couponCode.trim() || loading}
-          className="px-4 py-2 bg-[#2F3E2C] text-white rounded-lg font-medium text-sm hover:bg-[#1f2b1d] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+          className="px-4 py-2 bg-[#234d1b] text-white rounded-lg font-medium text-sm hover:bg-[#234d1b] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
         </button>

@@ -19,7 +19,7 @@ export default async function AdminOrdersPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-8 font-serif font-black text-[#2F3E2C] uppercase tracking-widest">
+        <div className="p-8 font-serif font-black text-[#234d1b] uppercase tracking-widest">
           Loading Intelligence...
         </div>
       }

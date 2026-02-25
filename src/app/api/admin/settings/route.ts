@@ -3,8 +3,9 @@ import connectDB from "@/lib/mongodb";
 import Settings from "@/models/Settings";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { encryptPassword } from "@/lib/encryption";
+import { encryptPassword, decryptPassword } from "@/lib/encryption";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import Razorpay from "razorpay";
 
 const MASKED = "********";
 
@@ -15,9 +16,12 @@ export async function GET() {
 
     if (settings) {
       const masked = settings.toObject();
-      
+
       // Migration: Convert old taxRate to taxRates array
-      if (masked.taxRate !== undefined && (!masked.taxRates || masked.taxRates.length === 0)) {
+      if (
+        masked.taxRate !== undefined &&
+        (!masked.taxRates || masked.taxRates.length === 0)
+      ) {
         masked.taxRates = [
           {
             name: "GST",
@@ -28,16 +32,20 @@ export async function GET() {
         // Update in database
         await Settings.findOneAndUpdate(
           {},
-          { 
+          {
             taxRates: masked.taxRates,
-            $unset: { taxRate: "" }
-          }
+            $unset: { taxRate: "" },
+          },
         );
       }
-      
+
       if (masked.payment?.razorpayKeySecret)
         masked.payment.razorpayKeySecret = MASKED;
+      if (masked.payment?.razorpayWebhookSecret)
+        masked.payment.razorpayWebhookSecret = MASKED;
       if (masked.smtp?.password) masked.smtp.password = MASKED;
+      if (masked.googleMyBusiness?.apiKey)
+        masked.googleMyBusiness.apiKey = MASKED;
       return NextResponse.json(masked);
     }
 
@@ -93,16 +101,55 @@ export async function POST(req: Request) {
     // Handle Sensitive fields
     const existing = await Settings.findOne();
 
+    // Track if Razorpay credentials are actually being changed
+    let razorpayCredentialsChanged = false;
+
+    // --- Handle Payment Keys ---
     if (data.payment?.razorpayKeySecret) {
       if (data.payment.razorpayKeySecret === MASKED) {
         data.payment.razorpayKeySecret = existing?.payment?.razorpayKeySecret;
       } else {
+        razorpayCredentialsChanged = true;
         data.payment.razorpayKeySecret = encryptPassword(
           data.payment.razorpayKeySecret,
         );
       }
     }
 
+    if (data.payment?.razorpayWebhookSecret) {
+      if (data.payment.razorpayWebhookSecret === MASKED) {
+        data.payment.razorpayWebhookSecret =
+          existing?.payment?.razorpayWebhookSecret;
+      } else {
+        data.payment.razorpayWebhookSecret = encryptPassword(
+          data.payment.razorpayWebhookSecret,
+        );
+      }
+    }
+
+    // --- Validate Razorpay Credentials (only if credentials are being changed) ---
+    if (
+      razorpayCredentialsChanged &&
+      data.payment?.razorpayKeyId &&
+      data.payment?.razorpayKeySecret
+    ) {
+      try {
+        const testSecret = decryptPassword(data.payment.razorpayKeySecret);
+
+        const instance = new Razorpay({
+          key_id: data.payment.razorpayKeyId,
+          key_secret: testSecret,
+        });
+        await (instance.orders as any).all({ count: 1 });
+      } catch (rzpError: any) {
+        return NextResponse.json(
+          { error: "Invalid Razorpay credentials. Connection test failed." },
+          { status: 400 },
+        );
+      }
+    }
+
+    // --- Handle SMTP password ---
     if (data.smtp?.password) {
       if (data.smtp.password === MASKED) {
         data.smtp.password = existing?.smtp?.password;
@@ -111,18 +158,38 @@ export async function POST(req: Request) {
       }
     }
 
+    // --- Handle Google My Business API Key ---
+    if (data.googleMyBusiness?.apiKey) {
+      if (data.googleMyBusiness.apiKey === MASKED) {
+        data.googleMyBusiness.apiKey = existing?.googleMyBusiness?.apiKey;
+      } else {
+        data.googleMyBusiness.apiKey = encryptPassword(
+          data.googleMyBusiness.apiKey,
+        );
+      }
+    }
+
     const settings = await Settings.findOneAndUpdate({}, data, {
-      new: true,
+      returnDocument: "after",
       upsert: true,
     });
 
     const response = settings.toObject();
     if (response.payment?.razorpayKeySecret)
       response.payment.razorpayKeySecret = MASKED;
+    if (response.payment?.razorpayWebhookSecret)
+      response.payment.razorpayWebhookSecret = MASKED;
     if (response.smtp?.password) response.smtp.password = MASKED;
+    if (response.googleMyBusiness?.apiKey)
+      response.googleMyBusiness.apiKey = MASKED;
 
     return NextResponse.json(response);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+// PUT method for updating settings
+export async function PUT(req: Request) {
+  return POST(req); // Reuse POST logic
 }

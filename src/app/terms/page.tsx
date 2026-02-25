@@ -1,5 +1,5 @@
-import GenericPageComponent from "@/components/GenericPage";
+import { redirect } from "next/navigation";
 
 export default function TermsPage() {
-  return <GenericPageComponent slug="terms" />;
+  redirect("/legal/terms");
 }

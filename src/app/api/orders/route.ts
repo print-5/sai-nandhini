@@ -138,12 +138,37 @@ export async function POST(req: Request) {
 
     const createdOrder = await order.save();
 
-    // If coupon was used, increment usage count
+    // If coupon was used, increment usage count and track per-user usage
     if (couponCode) {
-      await Coupon.findOneAndUpdate(
-        { code: couponCode.toUpperCase() },
-        { $inc: { usedCount: 1 } },
-      );
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
+      
+      if (coupon) {
+        // Increment total usage count
+        coupon.usedCount = (coupon.usedCount || 0) + 1;
+
+        // Track per-user usage
+        const userUsageIndex = coupon.usedByUsers?.findIndex(
+          (u: any) => u.userId.toString() === userId
+        );
+
+        if (userUsageIndex !== undefined && userUsageIndex >= 0) {
+          // User has used this coupon before, increment their count
+          coupon.usedByUsers[userUsageIndex].count += 1;
+          coupon.usedByUsers[userUsageIndex].lastUsedAt = new Date();
+        } else {
+          // First time user is using this coupon
+          if (!coupon.usedByUsers) {
+            coupon.usedByUsers = [];
+          }
+          coupon.usedByUsers.push({
+            userId: userId,
+            count: 1,
+            lastUsedAt: new Date(),
+          });
+        }
+
+        await coupon.save();
+      }
     }
 
     // If it's Cash on Delivery, send the email immediately

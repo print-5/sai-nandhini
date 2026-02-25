@@ -20,7 +20,9 @@ export async function PUT(
     const body = await req.json();
     await connectDB();
 
-    const coupon = await Coupon.findByIdAndUpdate(id, body, { new: true });
+    const coupon = await Coupon.findByIdAndUpdate(id, body, { 
+      returnDocument: "after" 
+    });
     if (!coupon)
       return NextResponse.json({ error: "Coupon not found" }, { status: 404 });
 

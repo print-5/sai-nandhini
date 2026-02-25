@@ -4,22 +4,27 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 248, 246, 242;
+  --background-start-rgb: 236, 224, 204;
   --background-end-rgb: 255, 255, 255;
 }
 
 body {
-  color: #2f3e2c;
-  background: #f8f6f2;
+  color: #234d1b;
+  background: #ece0cc;
   min-height: 100vh;
   font-family: var(--font-poppins), "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Smooth section transitions */
+section {
+  position: relative;
+}
+
 @layer components {
   .btn-primary {
-    @apply bg-[#2F3E2C] hover:bg-[#1f2b1d] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg;
+    @apply bg-[#234d1b] hover:bg-[#f8bf51] hover:text-[#234d1b] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg;
   }
 
   .glass-card {
@@ -27,7 +32,7 @@ body {
   }
 
   .premium-heading {
-    @apply font-sans text-4xl md:text-6xl font-bold tracking-tight text-[#2F3E2C];
+    @apply font-sans text-4xl md:text-6xl font-bold tracking-tight text-[#234d1b];
   }
 }
 
@@ -36,16 +41,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f8f6f2;
+  background: #ece0cc;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2f3e2c;
+  background: #234d1b;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #c6a75e;
+  background: #f8bf51;
 }
 
 /* Custom scrollbar for order summary */
@@ -105,10 +110,60 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #c6a75e;
+  background: #f8bf51;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #b89650;
+  background: #ffd788;
+}
+
+/* Premium shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #234d1b 0%,
+    #f8bf51 50%,
+    #234d1b 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Smooth section fade in */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Selection colors */
+::selection {
+  background: #f8bf51;
+  color: #234d1b;
+}
+
+::-moz-selection {
+  background: #f8bf51;
+  color: #234d1b;
 }

@@ -38,6 +38,27 @@ const CouponSchema = new Schema(
       type: Number,
       default: 0,
     },
+    perUserLimit: {
+      type: Number,
+      default: null, // null means unlimited per user
+    },
+    usedByUsers: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        count: {
+          type: Number,
+          default: 1,
+        },
+        lastUsedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,

@@ -53,7 +53,7 @@ export default function ConfirmationModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-[#2F3E2C]/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-[#234d1b]/60 backdrop-blur-sm"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -81,7 +81,7 @@ export default function ConfirmationModal({
                 </button>
               </div>
 
-              <h2 className="text-2xl font-black text-[#2F3E2C] mb-2 tracking-tight">
+              <h2 className="text-2xl font-black text-[#234d1b] mb-2 tracking-tight">
                 {title}
               </h2>
               <p className="text-gray-500 font-medium leading-relaxed">

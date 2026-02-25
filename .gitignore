@@ -43,3 +43,8 @@ next-env.d.ts
 # IDEs
 .vscode/
 .idea/
+.kiro
+.agent
+.agents
+
+

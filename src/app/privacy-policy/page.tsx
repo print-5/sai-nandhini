@@ -1,5 +1,5 @@
-import GenericPageComponent from "@/components/GenericPage";
+import { redirect } from "next/navigation";
 
 export default function PrivacyPolicyPage() {
-  return <GenericPageComponent slug="privacy-policy" />;
+  redirect("/legal/privacy");
 }

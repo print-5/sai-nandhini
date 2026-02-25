@@ -246,7 +246,7 @@ export default function ProductModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-[#2F3E2C]/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-[#234d1b]/80 backdrop-blur-sm"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -254,9 +254,9 @@ export default function ProductModal({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="bg-white rounded-[40px] shadow-2xl w-full max-w-5xl relative z-10 overflow-hidden flex flex-col max-h-[90vh]"
           >
-            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-[#F8F6F2]">
+            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-[#ece0cc]">
               <div>
-                <h2 className="text-3xl font-serif font-black text-[#2F3E2C]">
+                <h2 className="text-3xl font-serif font-black text-[#234d1b]">
                   {product ? "Edit Product" : "Add New Product"}
                 </h2>
                 <p className="text-gray-400 text-xs font-black uppercase tracking-widest mt-1">
@@ -278,7 +278,7 @@ export default function ProductModal({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 {/* Left Column: Basic Info */}
                 <div className="space-y-8">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-[#2F3E2C] border-b border-[#2F3E2C]/10 pb-2">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-[#234d1b] border-b border-[#234d1b]/10 pb-2">
                     Product Information
                   </h3>
 
@@ -291,7 +291,7 @@ export default function ProductModal({
                       required
                       value={formData.name}
                       onChange={(e) => handleNameChange(e.target.value)}
-                      className="w-full bg-[#F8F6F2] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#C6A75E]/30 transition-all font-bold text-[#2F3E2C] placeholder:text-gray-300"
+                      className="w-full bg-[#ece0cc] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#f8bf51]/30 transition-all font-bold text-[#234d1b] placeholder:text-gray-300"
                       placeholder="e.g. Signature Red Velvet Cake"
                     />
                     <p className="text-[10px] text-gray-400 font-mono mt-1 ml-1 tracking-wider uppercase opacity-50">
@@ -313,7 +313,7 @@ export default function ProductModal({
                           description: e.target.value,
                         })
                       }
-                      className="w-full bg-[#F8F6F2] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#C6A75E]/30 transition-all font-medium text-[#2F3E2C] placeholder:text-gray-300 resize-none"
+                      className="w-full bg-[#ece0cc] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#f8bf51]/30 transition-all font-medium text-[#234d1b] placeholder:text-gray-300 resize-none"
                       placeholder="Describe your product..."
                     />
                   </div>
@@ -332,7 +332,7 @@ export default function ProductModal({
                               category: e.target.value,
                             })
                           }
-                          className="w-full bg-[#F8F6F2] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#C6A75E]/30 transition-all font-bold text-[#2F3E2C] appearance-none cursor-pointer"
+                          className="w-full bg-[#ece0cc] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#f8bf51]/30 transition-all font-bold text-[#234d1b] appearance-none cursor-pointer"
                         >
                           <option value="">Select Category</option>
                           {categories.map((cat) => (
@@ -361,7 +361,7 @@ export default function ProductModal({
                               subCategory: e.target.value,
                             })
                           }
-                          className="w-full bg-[#F8F6F2] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#C6A75E]/30 transition-all font-bold text-[#2F3E2C] appearance-none cursor-pointer"
+                          className="w-full bg-[#ece0cc] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#f8bf51]/30 transition-all font-bold text-[#234d1b] appearance-none cursor-pointer"
                           disabled={!formData.category}
                         >
                           <option value="">Select Sub Category</option>
@@ -390,14 +390,14 @@ export default function ProductModal({
                         onChange={(e) =>
                           setFormData({ ...formData, badge: e.target.value })
                         }
-                        className="w-full bg-[#F8F6F2] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#C6A75E]/30 transition-all font-bold text-[#2F3E2C]"
+                        className="w-full bg-[#ece0cc] border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#f8bf51]/30 transition-all font-bold text-[#234d1b]"
                         placeholder="e.g. Bestseller"
                       />
                     </div>
                     <div className="flex flex-col justify-end gap-3 pb-2">
-                      <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-[#F8F6F2] transition-colors">
+                      <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-[#ece0cc] transition-colors">
                         <div
-                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${formData.isFeatured ? "bg-[#C6A75E] border-[#C6A75E]" : "border-gray-300 group-hover:border-[#C6A75E]"}`}
+                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${formData.isFeatured ? "bg-[#f8bf51] border-[#f8bf51]" : "border-gray-300 group-hover:border-[#f8bf51]"}`}
                         >
                           {formData.isFeatured && (
                             <Check size={12} className="text-white" />
@@ -414,14 +414,14 @@ export default function ProductModal({
                             })
                           }
                         />
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider group-hover:text-[#2F3E2C] transition-colors">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider group-hover:text-[#234d1b] transition-colors">
                           Featured
                         </span>
                       </label>
 
-                      <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-[#F8F6F2] transition-colors">
+                      <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-[#ece0cc] transition-colors">
                         <div
-                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${formData.isCodAvailable ? "bg-[#2F3E2C] border-[#2F3E2C]" : "border-gray-300 group-hover:border-[#2F3E2C]"}`}
+                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${formData.isCodAvailable ? "bg-[#234d1b] border-[#234d1b]" : "border-gray-300 group-hover:border-[#234d1b]"}`}
                         >
                           {formData.isCodAvailable && (
                             <Check size={12} className="text-white" />
@@ -438,7 +438,7 @@ export default function ProductModal({
                             })
                           }
                         />
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider group-hover:text-[#2F3E2C] transition-colors">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider group-hover:text-[#234d1b] transition-colors">
                           COD Available
                         </span>
                       </label>
@@ -452,7 +452,7 @@ export default function ProductModal({
                         Product Images ({formData.images.length}/4)
                       </h3>
                       {uploading && (
-                        <span className="text-xs text-[#C6A75E] font-bold animate-pulse">
+                        <span className="text-xs text-[#f8bf51] font-bold animate-pulse">
                           Uploading...
                         </span>
                       )}
@@ -495,11 +495,11 @@ export default function ProductModal({
 
                       {/* Upload Button */}
                       {formData.images.length < 4 && (
-                        <label className="aspect-square border-2 border-dashed border-gray-200 hover:border-[#C6A75E] rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer bg-[#F8F6F2] hover:bg-[#F8F6F2]/50 transition-all group">
-                          <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-gray-300 group-hover:text-[#C6A75E] group-hover:scale-110 transition-all mb-2">
+                        <label className="aspect-square border-2 border-dashed border-gray-200 hover:border-[#f8bf51] rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer bg-[#ece0cc] hover:bg-[#ece0cc]/50 transition-all group">
+                          <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-gray-300 group-hover:text-[#f8bf51] group-hover:scale-110 transition-all mb-2">
                             <Upload size={16} />
                           </div>
-                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest group-hover:text-[#C6A75E]">
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest group-hover:text-[#f8bf51]">
                             Add Image
                           </span>
                           <input
@@ -518,14 +518,14 @@ export default function ProductModal({
 
                 {/* Right Column: Variants */}
                 <div className="space-y-8">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-[#2F3E2C] border-b border-[#2F3E2C]/10 pb-2">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-[#234d1b] border-b border-[#234d1b]/10 pb-2">
                     Pricing & Variants (UOM)
                   </h3>
 
-                  <div className="bg-[#F8F6F2] rounded-[32px] p-8 space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
+                  <div className="bg-[#ece0cc] rounded-[32px] p-8 space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
                     {dataLoading ? (
                       <div className="flex justify-center p-8">
-                        <Loader2 className="animate-spin text-[#C6A75E]" />
+                        <Loader2 className="animate-spin text-[#f8bf51]" />
                       </div>
                     ) : uoms.length === 0 ? (
                       <div className="text-center p-8 text-gray-400 text-xs font-bold uppercase tracking-widest">
@@ -543,12 +543,12 @@ export default function ProductModal({
                         return (
                           <div
                             key={uom._id}
-                            className={`p-5 rounded-2xl transition-all border-2 ${isChecked ? "bg-white border-[#C6A75E] shadow-xl shadow-[#C6A75E]/5 scale-[1.02]" : "bg-transparent border-transparent hover:bg-white/50 hover:border-gray-200"}`}
+                            className={`p-5 rounded-2xl transition-all border-2 ${isChecked ? "bg-white border-[#f8bf51] shadow-xl shadow-[#f8bf51]/5 scale-[1.02]" : "bg-transparent border-transparent hover:bg-white/50 hover:border-gray-200"}`}
                           >
                             <div className="flex items-center gap-4 mb-4">
                               <label className="flex items-center gap-3 cursor-pointer flex-grow">
                                 <div
-                                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isChecked ? "bg-[#C6A75E] border-[#C6A75E]" : "bg-white border-gray-300"}`}
+                                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isChecked ? "bg-[#f8bf51] border-[#f8bf51]" : "bg-white border-gray-300"}`}
                                 >
                                   {isChecked && (
                                     <Check size={12} className="text-white" />
@@ -567,7 +567,7 @@ export default function ProductModal({
                                   }
                                 />
                                 <span
-                                  className={`text-sm font-bold uppercase tracking-wider ${isChecked ? "text-[#2F3E2C]" : "text-gray-400"}`}
+                                  className={`text-sm font-bold uppercase tracking-wider ${isChecked ? "text-[#234d1b]" : "text-gray-400"}`}
                                 >
                                   {uom.name}
                                 </span>
@@ -590,7 +590,7 @@ export default function ProductModal({
                                         e.target.value,
                                       )
                                     }
-                                    className="w-full bg-[#f0ede6] border-none rounded-xl py-3 px-4 text-sm font-bold text-[#2F3E2C] outline-none focus:ring-2 focus:ring-[#C6A75E]/30"
+                                    className="w-full bg-[#f0ede6] border-none rounded-xl py-3 px-4 text-sm font-bold text-[#234d1b] outline-none focus:ring-2 focus:ring-[#f8bf51]/30"
                                   />
                                 </div>
                                 {manageInventory && (
@@ -608,7 +608,7 @@ export default function ProductModal({
                                           e.target.value,
                                         )
                                       }
-                                      className="w-full bg-[#f0ede6] border-none rounded-xl py-3 px-4 text-sm font-bold text-[#2F3E2C] outline-none focus:ring-2 focus:ring-[#C6A75E]/30"
+                                      className="w-full bg-[#f0ede6] border-none rounded-xl py-3 px-4 text-sm font-bold text-[#234d1b] outline-none focus:ring-2 focus:ring-[#f8bf51]/30"
                                     />
                                   </div>
                                 )}
@@ -634,10 +634,10 @@ export default function ProductModal({
 
               {/* SEO Section */}
               <div className="mt-12 pt-8 border-t border-gray-100">
-                <h3 className="text-sm font-black uppercase tracking-widest text-[#C6A75E] mb-6">
+                <h3 className="text-sm font-black uppercase tracking-widest text-[#f8bf51] mb-6">
                   Search Engine Optimization (SEO)
                 </h3>
-                <div className="bg-[#F8F6F2] rounded-[32px] p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-[#ece0cc] rounded-[32px] p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
@@ -652,7 +652,7 @@ export default function ProductModal({
                             seo: { ...formData.seo, metaTitle: e.target.value },
                           })
                         }
-                        className="w-full bg-white border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#C6A75E]/30 transition-all font-bold text-[#2F3E2C] placeholder:text-gray-300"
+                        className="w-full bg-white border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#f8bf51]/30 transition-all font-bold text-[#234d1b] placeholder:text-gray-300"
                         placeholder="Custom Page Title"
                       />
                     </div>
@@ -669,7 +669,7 @@ export default function ProductModal({
                             seo: { ...formData.seo, keywords: e.target.value },
                           })
                         }
-                        className="w-full bg-white border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#C6A75E]/30 transition-all font-medium text-[#2F3E2C] placeholder:text-gray-300"
+                        className="w-full bg-white border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#f8bf51]/30 transition-all font-medium text-[#234d1b] placeholder:text-gray-300"
                         placeholder="comma, separated, tags"
                       />
                     </div>
@@ -690,7 +690,7 @@ export default function ProductModal({
                           },
                         })
                       }
-                      className="w-full bg-white border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#C6A75E]/30 transition-all font-medium text-[#2F3E2C] placeholder:text-gray-300 resize-none h-full"
+                      className="w-full bg-white border-none rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-[#f8bf51]/30 transition-all font-medium text-[#234d1b] placeholder:text-gray-300 resize-none h-full"
                       placeholder="Brief description for search engines..."
                     />
                   </div>
@@ -701,14 +701,14 @@ export default function ProductModal({
             <div className="p-8 border-t border-gray-100 bg-white flex justify-end gap-4 z-20">
               <button
                 onClick={onClose}
-                className="px-8 py-4 rounded-2xl font-black text-gray-300 hover:bg-gray-50 hover:text-[#2F3E2C] transition-all uppercase tracking-widest text-[10px]"
+                className="px-8 py-4 rounded-2xl font-black text-gray-300 hover:bg-gray-50 hover:text-[#234d1b] transition-all uppercase tracking-widest text-[10px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={loading || uploading}
-                className="px-10 py-4 bg-[#2F3E2C] text-white rounded-2xl font-black shadow-xl hover:bg-[#1f2b1d] transition-all active:scale-95 disabled:opacity-70 flex items-center gap-2 uppercase tracking-widest text-[10px]"
+                className="px-10 py-4 bg-[#234d1b] text-white rounded-2xl font-black shadow-xl hover:bg-[#234d1b] transition-all active:scale-95 disabled:opacity-70 flex items-center gap-2 uppercase tracking-widest text-[10px]"
               >
                 {(loading || uploading) && (
                   <Loader2 className="animate-spin" size={14} />

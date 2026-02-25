@@ -1,8 +1,12 @@
-import { getSettingsData, getShippingRatesData } from "@/lib/admin-data";
+import { getSettingsData } from "@/lib/admin-data";
 import SettingsClient from "./SettingsClient";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+
+// Disable caching for this page to always get fresh data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminSettingsPage() {
   const session = await auth.api.getSession({
@@ -13,10 +17,7 @@ export default async function AdminSettingsPage() {
     redirect("/admin/login");
   }
 
-  const [settings, rates] = await Promise.all([
-    getSettingsData(),
-    getShippingRatesData(),
-  ]);
+  const settings = await getSettingsData();
 
-  return <SettingsClient initialSettings={settings} initialRates={rates} />;
+  return <SettingsClient initialSettings={settings} />;
 }

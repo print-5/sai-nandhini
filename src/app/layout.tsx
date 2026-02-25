@@ -18,21 +18,31 @@ const baloo = Baloo_2({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  const defaultMeta = {
+    title: "Sai Nandhini Tasty World | Authentic South Indian Delicacies",
+    description:
+      "Experience the magic of traditional sweets and savories crafted with love and the finest ingredients.",
+    keywords:
+      "sweets, snacks, pickles, south indian food, authentic delicacies",
+  };
+
   try {
     await connectDB();
-    const settings = await Settings.findOne().select("seo favicon");
-    if (settings?.seo) {
+    const settings = await Settings.findOne().select("seo favicon shopName");
+
+    if (settings) {
+      const siteName = settings.shopName || "Sai Nandhini Tasty World";
       return {
-        title: settings.seo.metaTitle || "Sai Nandhini Tasty World",
-        description:
-          settings.seo.metaDescription || "Authentic South Indian Delicacies",
-        keywords: settings.seo.keywords
+        title: settings.seo?.metaTitle || siteName,
+        description: settings.seo?.metaDescription || defaultMeta.description,
+        keywords: settings.seo?.keywords
           ? settings.seo.keywords.split(",").map((k: string) => k.trim())
-          : "sweets, snacks, pickles",
+          : defaultMeta.keywords.split(","),
         openGraph: {
-          title: settings.seo.metaTitle,
-          description: settings.seo.metaDescription,
-          images: settings.seo.ogImage ? [settings.seo.ogImage] : [],
+          title: settings.seo?.metaTitle || siteName,
+          description: settings.seo?.metaDescription || defaultMeta.description,
+          images: settings.seo?.ogImage ? [settings.seo.ogImage] : [],
+          siteName: siteName,
         },
         icons: settings.favicon ? { icon: settings.favicon } : undefined,
       };
@@ -41,13 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
     console.error("SEO Fetch Error:", e);
   }
 
-  return {
-    title: "Sai Nandhini Tasty World | Authentic South Indian Delicacies",
-    description:
-      "Experience the magic of artisanal bread, celebratory cakes, and traditional sweets crafted with love and the finest ingredients.",
-    keywords:
-      "sweets, snacks, pickles, cakes, south indian food, authentic delicacies",
-  };
+  return defaultMeta;
 }
 
 import { Providers } from "@/components/Providers";

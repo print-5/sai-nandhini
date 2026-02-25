@@ -18,6 +18,9 @@ async function getDecryptedPaymentConfig() {
     keySecret: config.payment.razorpayKeySecret
       ? decryptPassword(config.payment.razorpayKeySecret)
       : null,
+    webhookSecret: config.payment.razorpayWebhookSecret
+      ? decryptPassword(config.payment.razorpayWebhookSecret)
+      : null,
   };
 }
 
@@ -63,40 +66,71 @@ export async function POST(req: Request) {
       .digest("hex");
 
     if (generated_signature === razorpay_signature) {
-      const updatedOrder = await Order.findByIdAndUpdate(
-        orderId,
-        {
-          isPaid: true,
-          paidAt: Date.now(),
-          paymentResult: {
-            id: razorpay_payment_id,
-            status: "completed",
-            email_address: "",
-          },
-        },
-        { new: true },
-      ).populate("user");
-
-      if (!updatedOrder) {
+      const order = await Order.findById(orderId);
+      if (!order) {
         return NextResponse.json({ error: "Order not found" }, { status: 404 });
       }
 
-      // Trigger Email with Invoice (Async - don't block response)
-      (async () => {
-        try {
-          console.log("Generating invoice for order:", updatedOrder._id);
-          const invoiceHTML = await generateInvoiceHTML(updatedOrder);
-          const pdfBuffer = await generatePDFFromHTML(invoiceHTML);
-          await sendOrderConfirmationEmail(updatedOrder, pdfBuffer);
-        } catch (emailError) {
-          console.error("Failed to send invoice email:", emailError);
+      order.isPaid = true;
+      order.paidAt = new Date();
+      order.paymentResult = {
+        id: razorpay_payment_id,
+        status: "completed",
+        email_address: "",
+      };
+      await order.save();
+
+      // Check if webhook is configured (ref repo pattern)
+      const hasWebhook =
+        paymentConfig?.webhookSecret &&
+        paymentConfig.webhookSecret.trim() !== "";
+
+      if (hasWebhook) {
+        console.log(
+          `✅ Payment verified for order ${order._id}. Webhook will handle invoice email.`,
+        );
+      } else {
+        // No webhook configured - send email immediately
+        console.log(
+          `⚠️ No webhook configured. Sending invoice email immediately for order ${order._id}...`,
+        );
+
+        if (!order.invoiceEmailSent) {
+          try {
+            const populatedOrder =
+              await Order.findById(orderId).populate("user");
+            console.log(
+              `📧 Generating invoice and sending confirmation email for order ${order._id}...`,
+            );
+            const invoiceHTML = await generateInvoiceHTML(populatedOrder);
+            const pdfBuffer = await generatePDFFromHTML(invoiceHTML);
+            await sendOrderConfirmationEmail(populatedOrder, pdfBuffer);
+
+            // Mark email as sent
+            order.invoiceEmailSent = true;
+            order.invoiceEmailSentAt = new Date();
+            await order.save();
+
+            console.log(
+              `✅ Invoice generated and email sent for order ${order._id}`,
+            );
+          } catch (emailError) {
+            console.error(
+              "❌ Failed to send order confirmation email:",
+              emailError,
+            );
+          }
+        } else {
+          console.log(
+            `ℹ️ Invoice email already sent for order ${order._id}, skipping.`,
+          );
         }
-      })();
+      }
 
       return NextResponse.json({
         success: true,
         message: "Payment verified successfully",
-        orderId: updatedOrder._id,
+        orderId: order._id,
       });
     } else {
       return NextResponse.json(

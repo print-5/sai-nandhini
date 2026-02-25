@@ -10,17 +10,31 @@ export default function InvoiceClient({
   format: string;
 }) {
   const [mounted, setMounted] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
+
   useEffect(() => {
     setMounted(true);
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/admin/settings");
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings", error);
+      }
+    };
+    fetchSettings();
   }, []);
 
   useEffect(() => {
-    if (order) {
+    if (order && settings) {
       setTimeout(() => {
         window.print();
       }, 1000);
     }
-  }, [order]);
+  }, [order, settings]);
 
   if (!order)
     return (
@@ -46,12 +60,15 @@ export default function InvoiceClient({
         `}</style>
         <div className="text-center mb-4">
           <h1 className="text-lg font-bold uppercase">
-            Sai Nandhini Tasty World
+            {settings?.shopName || "Sai Nandhini Tasty World"}
           </h1>
           <p className="text-[10px]">
-            # 3/81, 1st Floor, Kaveri Main St, Thirunagar, Madurai - 625006
+            {settings?.address ||
+              "# 3/81, 1st Floor, Kaveri Main St, Thirunagar, Madurai - 625006"}
           </p>
-          <p className="text-[10px]">WhatsApp: +91 96009 16065</p>
+          <p className="text-[10px]">
+            WhatsApp: {settings?.contactPhone || "+91 96009 16065"}
+          </p>
           <div className="border-b border-black border-dashed my-2" />
           <p className="font-bold">INVOICE</p>
           <p>#{order._id.slice(-6).toUpperCase()}</p>
@@ -145,19 +162,26 @@ export default function InvoiceClient({
       <div className="flex justify-between items-start mb-12 border-b border-gray-200 pb-8">
         <div>
           <h1 className="text-4xl font-serif font-bold text-primary mb-2">
-            Sai Nandhini
+            {settings?.shopName?.split(" ").slice(0, 2).join(" ") ||
+              "Sai Nandhini"}
           </h1>
           <h2 className="text-xl font-light tracking-widest uppercase mb-6">
-            Tasty World
+            {settings?.shopName?.split(" ").slice(2).join(" ") || "Tasty World"}
           </h2>
           <p className="text-sm text-gray-500">
-            # 3/81, 1st Floor, Kaveri Main Street
+            {settings?.address?.split(",").slice(0, 2).join(",") ||
+              "# 3/81, 1st Floor, Kaveri Main Street"}
           </p>
           <p className="text-sm text-gray-500">
-            SRV Nagar, Thirunagar, Madurai - 625006
+            {settings?.address?.split(",").slice(2).join(",") ||
+              "SRV Nagar, Thirunagar, Madurai - 625006"}
           </p>
-          <p className="text-sm text-gray-500">GSTIN: 33ABCDE1234F1Z5</p>
-          <p className="text-sm text-gray-500">Ph: +91 96009 16065</p>
+          <p className="text-sm text-gray-500">
+            Ph: {settings?.contactPhone || "+91 96009 16065"}
+          </p>
+          <p className="text-sm text-gray-500">
+            Email: {settings?.contactEmail || "info@sainandhini.com"}
+          </p>
         </div>
         <div className="text-right">
           <h3 className="text-3xl font-bold text-gray-300 uppercase tracking-widest mb-4">
@@ -289,7 +313,10 @@ export default function InvoiceClient({
         <p className="mb-2 font-bold uppercase tracking-widest">
           Thank you for your business!
         </p>
-        <p>For any queries, please contact support@sainandhinitastyworld.com</p>
+        <p>
+          For any queries, please contact{" "}
+          {settings?.contactEmail || "info@sainandhini.com"}
+        </p>
         <p className="mt-4 text-[10px] text-gray-300">
           Computer generated invoice. No signature required.
         </p>

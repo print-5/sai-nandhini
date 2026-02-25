@@ -3,12 +3,40 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Phone, Mail, Send, MessageSquare, Users, Calendar, Briefcase } from "lucide-react";
-import { useState } from "react";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Send,
+  MessageSquare,
+  Users,
+  Calendar,
+  Briefcase,
+} from "lucide-react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 export default function ContactPage() {
-  const [activeTab, setActiveTab] = useState<"general" | "corporate">("general");
+  const [settings, setSettings] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<"general" | "corporate">(
+    "general",
+  );
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/admin/settings");
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings", error);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,7 +66,8 @@ export default function ContactPage() {
           email: "",
           phone: "",
           company: "",
-          type: activeTab === "general" ? "General Inquiry" : "Corporate Booking",
+          type:
+            activeTab === "general" ? "General Inquiry" : "Corporate Booking",
           message: "",
           date: "",
         });
@@ -52,6 +81,26 @@ export default function ContactPage() {
       setLoading(false);
     }
   };
+
+  const contactInfos = [
+    {
+      title: "Visit Us",
+      content:
+        settings?.address ||
+        "# 3/81, 1st Floor, Kaveri Main Street, SRV Nagar, Thirunagar, Madurai - 625006",
+      icon: MapPin,
+    },
+    {
+      title: "WhatsApp / Call Us",
+      content: settings?.contactPhone || "+91 96009 16065",
+      icon: Phone,
+    },
+    {
+      title: "Email Us",
+      content: settings?.contactEmail || "info@sainandhini.com",
+      icon: Mail,
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-secondary/30">
@@ -80,31 +129,15 @@ export default function ContactPage() {
             transition={{ delay: 0.2 }}
             className="text-gray-500 mt-6 max-w-2xl mx-auto font-medium"
           >
-            Whether you have a question, feedback, or need bulk orders for your event, we're here to assist you.
+            Whether you have a question, feedback, or need bulk orders for your
+            event, we're here to assist you.
           </motion.p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           {/* Contact Info */}
           <div className="lg:col-span-4 space-y-8">
-            {[
-              {
-                title: "Visit Us",
-                content:
-                  "# 3/81, 1st Floor, Kaveri Main Street, SRV Nagar, Thirunagar, Madurai - 625006",
-                icon: MapPin,
-              },
-              {
-                title: "WhatsApp / Call Us",
-                content: "+91 96009 16065",
-                icon: Phone,
-              },
-              {
-                title: "Email Us",
-                content: "info@sainandhini.com",
-                icon: Mail,
-              },
-            ].map((item, i) => (
+            {contactInfos.map((item, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -20 }}
@@ -140,7 +173,9 @@ export default function ContactPage() {
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 text-sm">
                     <item.icon size={16} className="text-accent" />
-                    <span className="text-primary-light font-medium">{item.text}</span>
+                    <span className="text-primary-light font-medium">
+                      {item.text}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -201,7 +236,9 @@ export default function ContactPage() {
                       type="text"
                       required
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       placeholder="John Doe"
                       className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium"
                     />
@@ -214,7 +251,9 @@ export default function ContactPage() {
                       type="email"
                       required
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       placeholder="john@example.com"
                       className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium"
                     />
@@ -230,7 +269,9 @@ export default function ContactPage() {
                       type="tel"
                       required
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
                       placeholder="+91 98765 43210"
                       className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium"
                     />
@@ -243,7 +284,9 @@ export default function ContactPage() {
                       <input
                         type="text"
                         value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, company: e.target.value })
+                        }
                         placeholder="Your Company"
                         className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium"
                       />
@@ -257,7 +300,9 @@ export default function ContactPage() {
                   </label>
                   <select
                     value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value })
+                    }
                     className="w-full bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl py-5 px-6 outline-none transition-all font-medium appearance-none cursor-pointer"
                   >
                     {activeTab === "general" ? (
@@ -286,7 +331,9 @@ export default function ContactPage() {
                     rows={6}
                     required
                     value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, message: e.target.value })
+                    }
                     placeholder={
                       activeTab === "general"
                         ? "How can we help you today?"

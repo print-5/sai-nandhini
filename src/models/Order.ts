@@ -50,6 +50,8 @@ const OrderSchema = new Schema(
       default: "Pending",
     },
     awbNumber: { type: String },
+    invoiceEmailSent: { type: Boolean, default: false },
+    invoiceEmailSentAt: { type: Date },
   },
   {
     timestamps: true,

@@ -27,7 +27,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const COLORS = ["#2F3E2C", "#C6A75E", "#8B4513", "#D2691E", "#CD853F"];
+const COLORS = ["#234d1b", "#f8bf51", "#8B4513", "#D2691E", "#CD853F"];
 
 export default function AnalyticsClient({ initialData }: { initialData: any }) {
   const [data] = useState<any>(initialData);
@@ -196,7 +196,7 @@ export default function AnalyticsClient({ initialData }: { initialData: any }) {
                     dataKey="name"
                     type="category"
                     width={100}
-                    tick={{ fontSize: 10, fontWeight: 700, fill: "#2F3E2C" }}
+                    tick={{ fontSize: 10, fontWeight: 700, fill: "#234d1b" }}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -212,7 +212,7 @@ export default function AnalyticsClient({ initialData }: { initialData: any }) {
                   />
                   <Bar
                     dataKey="totalSales"
-                    fill="#C6A75E"
+                    fill="#f8bf51"
                     radius={[0, 4, 4, 0]}
                     barSize={20}
                   />
@@ -269,7 +269,7 @@ export default function AnalyticsClient({ initialData }: { initialData: any }) {
                     {data.paymentMethods.map((entry: any, index: number) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={index === 0 ? "#2F3E2C" : "#C6A75E"}
+                        fill={index === 0 ? "#234d1b" : "#f8bf51"}
                       />
                     ))}
                   </Pie>
@@ -296,7 +296,7 @@ export default function AnalyticsClient({ initialData }: { initialData: any }) {
                     <div
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
                       style={{
-                        backgroundColor: index === 0 ? "#2F3E2C" : "#C6A75E",
+                        backgroundColor: index === 0 ? "#234d1b" : "#f8bf51",
                       }}
                     >
                       <Zap size={14} />

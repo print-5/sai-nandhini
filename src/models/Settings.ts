@@ -56,6 +56,7 @@ const SettingsSchema = new Schema(
     payment: {
       razorpayKeyId: { type: String, default: "" },
       razorpayKeySecret: { type: String, default: "" },
+      razorpayWebhookSecret: { type: String, default: "" },
     },
     smtp: {
       host: { type: String, default: "" },
@@ -63,6 +64,11 @@ const SettingsSchema = new Schema(
       secure: { type: Boolean, default: false },
       user: { type: String, default: "" },
       password: { type: String, default: "" },
+    },
+    googleMyBusiness: {
+      placeId: { type: String, default: "" },
+      apiKey: { type: String, default: "" },
+      enabled: { type: Boolean, default: false },
     },
   },
   {

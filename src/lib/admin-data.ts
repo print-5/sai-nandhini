@@ -7,6 +7,8 @@ import Coupon from "@/models/Coupon";
 import Settings from "@/models/Settings";
 import ShippingRate from "@/models/ShippingRate";
 
+const MASKED = "********";
+
 export async function getAnalyticsData() {
   await connectDB();
 
@@ -124,84 +126,159 @@ export async function getCouponsData() {
 export async function getDashboardStats(range: string = "week") {
   await connectDB();
 
-  const today = new Date();
+  const now = new Date();
+  const today = new Date(now);
   today.setHours(0, 0, 0, 0);
 
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  // 1. Top Summary metrics (Splitting by Source)
-  const revenueMetrics = await Order.aggregate([
-    { $match: { isPaid: true } },
+  // 1. Threshold from settings
+  const settings = await Settings.findOne();
+  const threshold = settings?.lowStockThreshold || 10;
+
+  // KPIs
+  const productsCount = await Product.countDocuments();
+  const customersCount = await User.countDocuments({
+    role: { $in: ["customer", "user"] },
+  });
+
+  // Determine current and comparison period start dates
+  let days = 7;
+  let periodTitle = "Week";
+  if (range === "today") {
+    days = 1;
+    periodTitle = "Today";
+  } else if (range === "month") {
+    days = 30;
+    periodTitle = "Month";
+  }
+
+  const currentPeriodStart = new Date(today);
+  currentPeriodStart.setDate(today.getDate() - (days - 1));
+
+  const prevPeriodEnd = new Date(currentPeriodStart);
+  prevPeriodEnd.setMilliseconds(-1);
+
+  const prevPeriodStart = new Date(currentPeriodStart);
+  prevPeriodStart.setDate(currentPeriodStart.getDate() - days);
+
+  // Growth & Metrics Aggregation
+  const metrics = await Order.aggregate([
     {
       $facet: {
-        today: [
-          { $match: { createdAt: { $gte: today } } },
+        // Current Period Stats
+        current: [
+          { $match: { createdAt: { $gte: currentPeriodStart } } },
           {
             $group: {
               _id: null,
-              total: { $sum: "$totalPrice" },
+              revenue: { $sum: { $cond: ["$isPaid", "$totalPrice", 0] } },
+              orders: { $sum: 1 },
+              pendingOrders: {
+                $sum: { $cond: [{ $eq: ["$status", "Pending"] }, 1, 0] },
+              },
+              activeOrders: {
+                $sum: {
+                  $cond: [
+                    { $in: ["$status", ["Pending", "Processing", "Shipping"]] },
+                    1,
+                    0,
+                  ],
+                },
+              },
             },
           },
         ],
-        month: [
-          { $match: { createdAt: { $gte: startOfMonth } } },
+        // Previous Period Stats
+        previous: [
+          {
+            $match: {
+              createdAt: { $gte: prevPeriodStart, $lt: currentPeriodStart },
+            },
+          },
           {
             $group: {
               _id: null,
-              total: { $sum: "$totalPrice" },
+              revenue: { $sum: { $cond: ["$isPaid", "$totalPrice", 0] } },
+              orders: { $sum: 1 },
             },
           },
         ],
-        total: [
+        // All Time Revenue (for Month/Today displays if needed)
+        allTime: [
           {
             $group: {
               _id: null,
-              total: { $sum: "$totalPrice" },
+              totalRevenue: { $sum: { $cond: ["$isPaid", "$totalPrice", 0] } },
+              totalOrders: { $sum: 1 },
             },
           },
+        ],
+        // Status Distribution
+        statusDistribution: [
+          { $match: { createdAt: { $gte: currentPeriodStart } } },
+          {
+            $group: {
+              _id: "$status",
+              count: { $sum: 1 },
+            },
+          },
+        ],
+        // Revenue by Category (Top 5)
+        revenueByCategory: [
+          { $match: { isPaid: true, createdAt: { $gte: currentPeriodStart } } },
+          { $unwind: "$orderItems" },
+          {
+            $lookup: {
+              from: "products",
+              localField: "orderItems.product",
+              foreignField: "_id",
+              as: "product",
+            },
+          },
+          { $unwind: "$product" },
+          {
+            $group: {
+              _id: "$product.category",
+              value: {
+                $sum: { $multiply: ["$orderItems.qty", "$orderItems.price"] },
+              },
+            },
+          },
+          { $sort: { value: -1 } },
+          { $limit: 5 },
         ],
       },
     },
   ]);
 
-  const statsRev = revenueMetrics[0];
+  const m = metrics[0];
+  const curStats = m.current[0] || {
+    revenue: 0,
+    orders: 0,
+    pendingOrders: 0,
+    activeOrders: 0,
+  };
+  const prevStats = m.previous[0] || { revenue: 0, orders: 0 };
+  const allTimeStats = m.allTime[0] || { totalRevenue: 0, totalOrders: 0 };
 
-  const ordersCount = await Order.countDocuments();
-  const pendingOrdersCount = await Order.countDocuments({
-    isDelivered: false,
-  });
-  const productsCount = await Product.countDocuments();
-  const customersCount = await User.countDocuments({ role: "customer" });
+  // Calculate Growth Percentages
+  const calculateGrowth = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return ((current - previous) / previous) * 100;
+  };
 
-  // 1.5 Get Threshold from settings
-  const settings = await Settings.findOne();
-  const threshold = settings?.lowStockThreshold || 10;
+  const revenueGrowth = calculateGrowth(curStats.revenue, prevStats.revenue);
+  const ordersGrowth = calculateGrowth(curStats.orders, prevStats.orders);
 
-  // Stock Alerts
-  const lowStockProducts = await Product.find({
-    stock: { $lte: threshold, $gt: 0 },
-  })
-    .select("name stock uom images")
-    .limit(5);
-  const outOfStockProducts = await Product.find({ stock: 0 })
-    .select("name stock uom images")
-    .limit(5);
-
-  // 2. Sales Overview based on range
-  let days = 7;
-  if (range === "today") days = 1;
-  if (range === "month") days = 30;
-
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - (days - 1));
-
+  // Sales Trend Pipeline
   const salesTrend = await Order.aggregate([
-    { $match: { isPaid: true, createdAt: { $gte: startDate } } },
+    { $match: { isPaid: true, createdAt: { $gte: currentPeriodStart } } },
     {
       $group: {
         _id: {
           $dateToString: {
-            format: "%Y-%m-%d",
+            format: range === "today" ? "%H:00" : "%Y-%m-%d",
             date: "$createdAt",
             timezone: "+05:30",
           },
@@ -210,41 +287,64 @@ export async function getDashboardStats(range: string = "week") {
         count: { $sum: 1 },
       },
     },
+    { $sort: { _id: 1 } },
   ]);
 
-  // Fill in missing days for the chart
+  // Fill Trend Data
   const chartData = [];
-  for (let i = 0; i < days; i++) {
-    const date = new Date(startDate);
-    date.setDate(startDate.getDate() + i);
+  if (range === "today") {
+    for (let i = 0; i <= now.getHours(); i++) {
+      const hour = String(i).padStart(2, "0") + ":00";
+      const found = salesTrend.find((item) => item._id === hour);
+      chartData.push({
+        date: hour,
+        amount: found ? found.total : 0,
+        orders: found ? found.count : 0,
+      });
+    }
+  } else {
+    for (let i = 0; i < days; i++) {
+      const date = new Date(currentPeriodStart);
+      date.setDate(currentPeriodStart.getDate() + i);
 
-    // Format to YYYY-MM-DD in IST
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    const dateStr = `${yyyy}-${mm}-${dd}`;
+      // Calculate IST date string YYYY-MM-DD
+      const istDate = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+      const dateStr = istDate.toISOString().split("T")[0];
 
-    const found = salesTrend.find((item) => item._id === dateStr);
-    chartData.push({
-      date:
-        days === 1
-          ? date.toLocaleTimeString("en-US", { hour: "numeric" })
-          : days > 7
-            ? `${date.getDate()} ${date.toLocaleDateString("en-US", { month: "short" })}`
+      const found = salesTrend.find((item) => item._id === dateStr);
+      chartData.push({
+        date:
+          days > 7
+            ? `${date.getDate()} ${date.toLocaleString("en-US", { month: "short" })}`
             : date.toLocaleDateString("en-US", { weekday: "short" }),
-      amount: found ? found.total : 0,
-      orders: found ? found.count : 0,
-    });
+        amount: found ? found.total : 0,
+        orders: found ? found.count : 0,
+        fullDate: dateStr,
+      });
+    }
   }
 
-  // 3. Recent Orders
+  // Stock Alerts
+  const lowStockProducts = await Product.find({
+    stock: { $lte: threshold, $gt: 0 },
+  })
+    .select("name stock uom images")
+    .limit(5);
+
+  const outOfStockProducts = await Product.find({ stock: 0 })
+    .select("name stock uom images")
+    .limit(5);
+
+  // Recent Orders
   const recentOrders = await Order.find({})
     .sort({ createdAt: -1 })
-    .limit(5)
-    .populate("user", "name email");
+    .limit(8)
+    .populate("user", "name email")
+    .lean();
 
-  // 4. Top Selling Products
+  // Top Selling Products
   const topProducts = await Order.aggregate([
+    { $match: { isPaid: true, createdAt: { $gte: currentPeriodStart } } },
     { $unwind: "$orderItems" },
     {
       $group: {
@@ -262,22 +362,41 @@ export async function getDashboardStats(range: string = "week") {
 
   return JSON.parse(
     JSON.stringify({
+      range,
       stats: {
         revenue: {
-          total: statsRev.total[0]?.total || 0,
-          today: statsRev.today[0]?.total || 0,
-          month: statsRev.month[0]?.total || 0,
+          current: curStats.revenue,
+          previous: prevStats.revenue,
+          total: allTimeStats.totalRevenue,
+          growth: revenueGrowth,
         },
         orders: {
-          total: ordersCount,
-          pending: pendingOrdersCount,
+          current: curStats.orders,
+          previous: prevStats.orders,
+          total: allTimeStats.totalOrders,
+          pending: curStats.pendingOrders,
+          active: curStats.activeOrders,
+          growth: ordersGrowth,
         },
         products: {
           total: productsCount,
-          lowStock: lowStockProducts.length,
-          outOfStock: outOfStockProducts.length,
+          lowStock: await Product.countDocuments({
+            stock: { $lte: threshold, $gt: 0 },
+          }),
+          outOfStock: await Product.countDocuments({ stock: 0 }),
         },
-        customers: customersCount,
+        customers: {
+          total: customersCount,
+          // Calculate customer growth if needed, for now just total
+        },
+        statusDistribution: m.statusDistribution.reduce(
+          (acc: any, cur: any) => {
+            acc[cur._id || "Unknown"] = cur.count;
+            return acc;
+          },
+          {},
+        ),
+        revenueByCategory: m.revenueByCategory,
       },
       stockAlerts: {
         low: lowStockProducts,
@@ -299,7 +418,41 @@ export async function getProductsData() {
 export async function getSettingsData() {
   await connectDB();
   const settings = await Settings.findOne();
-  return JSON.parse(JSON.stringify(settings || {}));
+  if (!settings) return {};
+
+  const masked = settings.toObject();
+
+  // Migration: Convert old taxRate to taxRates array
+  if (
+    masked.taxRate !== undefined &&
+    (!masked.taxRates || masked.taxRates.length === 0)
+  ) {
+    masked.taxRates = [
+      {
+        name: "GST",
+        rate: masked.taxRate,
+        isDefault: true,
+      },
+    ];
+    // Update in database
+    await Settings.findOneAndUpdate(
+      {},
+      {
+        taxRates: masked.taxRates,
+        $unset: { taxRate: "" },
+      },
+    );
+  }
+
+  // Mask sensitive fields
+  if (masked.payment?.razorpayKeySecret)
+    masked.payment.razorpayKeySecret = MASKED;
+  if (masked.payment?.razorpayWebhookSecret)
+    masked.payment.razorpayWebhookSecret = MASKED;
+  if (masked.smtp?.password) masked.smtp.password = MASKED;
+  if (masked.googleMyBusiness?.apiKey) masked.googleMyBusiness.apiKey = MASKED;
+
+  return JSON.parse(JSON.stringify(masked));
 }
 
 export async function getOrdersData() {
