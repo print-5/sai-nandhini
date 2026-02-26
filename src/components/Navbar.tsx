@@ -259,7 +259,7 @@ export default function Navbar() {
                       session.user.role === "admin"
                         ? "/admin/dashboard"
                         : session.user.role === "customer"
-                          ? "/orders"
+                          ? "/profile"
                           : "/login"
                     }
                     className="p-2 text-white/70 hover:text-[#f8bf51] transition-colors"
@@ -407,12 +407,22 @@ export default function Navbar() {
 
               <div className="pt-8 border-t border-gray-100 flex flex-col gap-4">
                 <Link
-                  href={session ? "/admin/dashboard" : "/login"}
+                  href={
+                    session
+                      ? session.user.role === "admin"
+                        ? "/admin/dashboard"
+                        : "/profile"
+                      : "/login"
+                  }
                   className="flex items-center gap-3 text-[#234d1b] font-bold"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <User size={20} />{" "}
-                  {session ? "My Dashboard" : "Login / Register"}
+                  {session
+                    ? session.user.role === "admin"
+                      ? "Admin Dashboard"
+                      : "My Profile"
+                    : "Login / Register"}
                 </Link>
                 <Link
                   href="/checkout"
