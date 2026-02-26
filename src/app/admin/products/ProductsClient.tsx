@@ -38,6 +38,9 @@ export default function ProductsClient({
   const [threshold] = useState(initialSettings.lowStockThreshold || 10);
   const [manageInventory] = useState(initialSettings.manageInventory ?? true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedStockStatus, setSelectedStockStatus] = useState<string>("all");
 
   const fetchProducts = async () => {
     try {
@@ -104,15 +107,40 @@ export default function ProductsClient({
     }
   };
 
-  const filteredProducts = products.filter(
-    (p) =>
+  const filteredProducts = products.filter((p) => {
+    // Search filter
+    const matchesSearch =
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+      p.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Category filter
+    const matchesCategory =
+      selectedCategory === "all" || p.category === selectedCategory;
+
+    // Stock status filter
+    let matchesStock = true;
+    if (selectedStockStatus !== "all" && manageInventory) {
+      const stock =
+        p.variants?.reduce((acc: number, v: any) => acc + (v.stock || 0), 0) ||
+        p.stock ||
+        0;
+
+      if (selectedStockStatus === "in-stock") {
+        matchesStock = stock > threshold;
+      } else if (selectedStockStatus === "low-stock") {
+        matchesStock = stock > 0 && stock <= threshold;
+      } else if (selectedStockStatus === "out-of-stock") {
+        matchesStock = stock === 0;
+      }
+    }
+
+    return matchesSearch && matchesCategory && matchesStock;
+  });
 
   // KPI Calculations
   const totalProducts = products.length;
-  const totalCategories = new Set(products.map((p) => p.category)).size;
+  const allCategories = Array.from(new Set(products.map((p) => p.category)));
+  const totalCategories = allCategories.length;
   const lowStockCount = manageInventory
     ? products.filter((p) => {
         const stock =
@@ -261,8 +289,18 @@ export default function ProductsClient({
           />
         </div>
         <div className="flex gap-3 w-full md:w-auto">
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-white border border-gray-100 rounded-2xl font-bold text-gray-400 hover:text-[#234d1b] hover:border-[#234d1b]/20 transition-all shadow-sm uppercase tracking-widest text-[10px]">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all shadow-sm uppercase tracking-widest text-[10px] ${
+              showFilters
+                ? "bg-[#234d1b] text-white border-[#234d1b]"
+                : "bg-white border border-gray-100 text-gray-400 hover:text-[#234d1b] hover:border-[#234d1b]/20"
+            }`}
+          >
             <Filter size={16} /> Filter
+            {(selectedCategory !== "all" || selectedStockStatus !== "all") && (
+              <span className="w-2 h-2 bg-[#f8bf51] rounded-full animate-pulse" />
+            )}
           </button>
           <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-white border border-gray-100 rounded-2xl font-bold text-gray-400 hover:text-[#234d1b] hover:border-[#234d1b]/20 transition-all shadow-sm uppercase tracking-widest text-[10px]">
             <Package size={16} /> Manage UOMs
@@ -276,6 +314,163 @@ export default function ProductsClient({
           </button>
         </div>
       </div>
+
+      {/* Filter Panel */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-white rounded-[20px] p-6 border border-gray-100 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-sm font-black uppercase tracking-widest text-[#234d1b]">
+                  Filter Products
+                </h3>
+                <button
+                  onClick={() => {
+                    setSelectedCategory("all");
+                    setSelectedStockStatus("all");
+                  }}
+                  className="text-xs font-bold text-[#f8bf51] hover:underline uppercase tracking-wider"
+                >
+                  Clear All
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Category Filter */}
+                <div>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">
+                    Category
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setSelectedCategory("all")}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                        selectedCategory === "all"
+                          ? "bg-[#234d1b] text-white shadow-md"
+                          : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                      }`}
+                    >
+                      All
+                    </button>
+                    {allCategories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                          selectedCategory === cat
+                            ? "bg-[#234d1b] text-white shadow-md"
+                            : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Stock Status Filter */}
+                {manageInventory && (
+                  <div>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">
+                      Stock Status
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "all", label: "All", color: "gray" },
+                        {
+                          value: "in-stock",
+                          label: "In Stock",
+                          color: "green",
+                        },
+                        {
+                          value: "low-stock",
+                          label: "Low Stock",
+                          color: "orange",
+                        },
+                        {
+                          value: "out-of-stock",
+                          label: "Out of Stock",
+                          color: "red",
+                        },
+                      ].map((status) => (
+                        <button
+                          key={status.value}
+                          onClick={() => setSelectedStockStatus(status.value)}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                            selectedStockStatus === status.value
+                              ? "bg-[#234d1b] text-white shadow-md"
+                              : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                          }`}
+                        >
+                          {status.value !== "all" && (
+                            <div
+                              className={`w-2 h-2 rounded-full ${
+                                status.color === "green"
+                                  ? "bg-green-500"
+                                  : status.color === "orange"
+                                    ? "bg-orange-500"
+                                    : status.color === "red"
+                                      ? "bg-red-500"
+                                      : "bg-gray-400"
+                              }`}
+                            />
+                          )}
+                          {status.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Active Filters Summary */}
+              {(selectedCategory !== "all" ||
+                selectedStockStatus !== "all") && (
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <p className="text-xs text-gray-500 mb-2 font-medium">
+                    Active Filters:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCategory !== "all" && (
+                      <span className="px-3 py-1 bg-[#ece0cc] text-[#234d1b] text-xs font-bold rounded-full flex items-center gap-2">
+                        Category: {selectedCategory}
+                        <button
+                          onClick={() => setSelectedCategory("all")}
+                          className="hover:text-red-500"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                    {selectedStockStatus !== "all" && (
+                      <span className="px-3 py-1 bg-[#ece0cc] text-[#234d1b] text-xs font-bold rounded-full flex items-center gap-2">
+                        Status:{" "}
+                        {selectedStockStatus
+                          .split("-")
+                          .map(
+                            (w) => w.charAt(0).toUpperCase() + w.slice(1),
+                          )
+                          .join(" ")}
+                        <button
+                          onClick={() => setSelectedStockStatus("all")}
+                          className="hover:text-red-500"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Product List - Card Style Rows */}
       <div className="space-y-4">

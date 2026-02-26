@@ -20,6 +20,11 @@ import {
   X,
   Image as ImageIcon,
   MessageSquare,
+  DollarSign,
+  Package,
+  Truck,
+  Receipt,
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -29,7 +34,6 @@ const TABS = [
   { id: "brand", label: "Brand Identity", icon: Store },
   { id: "tax", label: "Tax & Pricing", icon: CreditCard },
   { id: "payment", label: "Payment Gateway", icon: CreditCard },
-  { id: "checkout", label: "Checkout Rules", icon: ShieldCheck },
   { id: "email", label: "Email Config", icon: Mail },
   { id: "seo", label: "SEO & Metadata", icon: Search },
   { id: "reviews", label: "Google Reviews", icon: MessageSquare },
@@ -529,136 +533,183 @@ export default function SettingsClient({
             <SettingsCard>
               <CardHeader
                 icon={<CreditCard size={20} />}
-                title="Tax & Pricing"
-                description="Configure tax rates and pricing settings"
+                title="Tax "
+                description="Configure tax rates and pricing settings for your store"
               />
-              <div className="space-y-6">
-                {/* Pricing Settings */}
-                <div>
-                  <FieldLabel>Pricing Settings</FieldLabel>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="text-xs text-gray-500 mb-2 block">
-                        Free Shipping Threshold (₹)
-                      </label>
-                      <input
-                        type="number"
-                        className={INPUT_CLASS}
-                        value={settings.freeShippingThreshold || ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            freeShippingThreshold: Number(e.target.value),
-                          })
-                        }
-                        placeholder="500"
-                      />
-                      <p className="text-xs text-gray-400 mt-1.5">
-                        Orders above this amount get free shipping
-                      </p>
-                    </div>
+              <div className="space-y-8">
+                
 
-                    <div>
-                      <label className="text-xs text-gray-500 mb-2 block">
-                        Default Shipping Fee (₹)
-                      </label>
-                      <input
-                        type="number"
-                        className={INPUT_CLASS}
-                        value={settings.shippingFee || ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            shippingFee: Number(e.target.value),
-                          })
-                        }
-                        placeholder="50"
-                      />
+                {/* Tax Rates Section */}
+                <div className="border-t-2 border-gray-100 pt-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                      <Receipt size={18} className="text-[#234d1b]" />
+                      <h3 className="text-sm font-black uppercase tracking-widest text-[#234d1b]">
+                        Tax Rates
+                      </h3>
                     </div>
+                    <span className="text-xs font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full">
+                      {settings.taxRates?.length || 0} Configured
+                    </span>
                   </div>
-                </div>
 
-                {/* Tax Rates */}
-                <div className="border-t border-gray-100 pt-6">
-                  <FieldLabel>Tax Rates</FieldLabel>
-                  <div className="space-y-3">
+                  {/* Tax Rates List */}
+                  <div className="space-y-3 mb-6">
                     {settings.taxRates && settings.taxRates.length > 0 ? (
                       settings.taxRates.map((tax: any, index: number) => (
-                        <div
+                        <motion.div
                           key={index}
-                          className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className={`group relative overflow-hidden rounded-2xl border-2 transition-all ${
+                            tax.isDefault
+                              ? "bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-md"
+                              : "bg-white border-gray-100 hover:border-[#f8bf51]/30 hover:shadow-md"
+                          }`}
                         >
-                          <div className="flex items-center gap-4">
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                {tax.name}
-                              </p>
-                              <p className="text-sm text-gray-500">{tax.rate}%</p>
-                            </div>
-                            {tax.isDefault && (
-                              <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-lg">
+                          {/* Default Badge Ribbon */}
+                          {tax.isDefault && (
+                            <div className="absolute top-0 right-0">
+                              <div className="bg-green-500 text-white text-[9px] font-black uppercase tracking-wider px-4 py-1 transform rotate-45 translate-x-6 translate-y-2 shadow-lg">
                                 Default
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {!tax.isDefault && (
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between p-5">
+                            <div className="flex items-center gap-4">
+                              {/* Tax Icon */}
+                              <div
+                                className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                                  tax.isDefault
+                                    ? "bg-green-100"
+                                    : "bg-[#ece0cc]"
+                                }`}
+                              >
+                                <Receipt
+                                  size={20}
+                                  className={
+                                    tax.isDefault
+                                      ? "text-green-600"
+                                      : "text-[#234d1b]"
+                                  }
+                                />
+                              </div>
+
+                              {/* Tax Details */}
+                              <div>
+                                <h4 className="font-bold text-lg text-[#234d1b] mb-0.5">
+                                  {tax.name}
+                                </h4>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-2xl font-black text-[#f8bf51]">
+                                    {tax.rate}%
+                                  </span>
+                                  {tax.isDefault && (
+                                    <span className="bg-green-100 text-green-700 text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-wider">
+                                      Active
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-2">
+                              {!tax.isDefault && (
+                                <button
+                                  type="button"
+                                  onClick={() => setDefaultTax(index)}
+                                  className="px-4 py-2 bg-white text-[#234d1b] text-xs font-bold rounded-xl border-2 border-gray-200 hover:border-[#234d1b] hover:bg-[#234d1b] hover:text-white transition-all uppercase tracking-wider"
+                                >
+                                  Set Default
+                                </button>
+                              )}
                               <button
                                 type="button"
-                                onClick={() => setDefaultTax(index)}
-                                className="text-xs font-bold text-primary hover:text-primary-dark px-3 py-1.5 bg-white rounded-lg border border-gray-200 hover:border-primary transition-colors"
+                                onClick={() => removeTaxRate(index)}
+                                className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 border-2 border-transparent hover:border-red-200 transition-all"
                               >
-                                Set Default
+                                <Trash2 size={18} />
                               </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => removeTaxRate(index)}
-                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            </div>
                           </div>
-                        </div>
+                        </motion.div>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-500 text-center py-4">
-                        No tax rates configured
-                      </p>
+                      <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                        <Receipt
+                          size={48}
+                          className="text-gray-300 mx-auto mb-4"
+                        />
+                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                          No tax rates configured
+                        </p>
+                        <p className="text-xs text-gray-400 mt-2">
+                          Add your first tax rate below
+                        </p>
+                      </div>
                     )}
                   </div>
-                </div>
 
-                {/* Add New Tax Rate */}
-                <div className="border-t border-gray-100 pt-6">
-                  <FieldLabel>Add New Tax Rate</FieldLabel>
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      className={`${INPUT_CLASS} flex-1`}
-                      placeholder="Tax Name (e.g., GST)"
-                      value={newTaxRate.name}
-                      onChange={(e) =>
-                        setNewTaxRate({ ...newTaxRate, name: e.target.value })
-                      }
-                    />
-                    <input
-                      type="number"
-                      className={`${INPUT_CLASS} w-32`}
-                      placeholder="Rate %"
-                      value={newTaxRate.rate}
-                      onChange={(e) =>
-                        setNewTaxRate({ ...newTaxRate, rate: e.target.value })
-                      }
-                    />
-                    <button
-                      type="button"
-                      onClick={addTaxRate}
-                      className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-colors flex items-center gap-2"
-                    >
-                      <Plus size={16} />
-                      Add
-                    </button>
+                  {/* Add New Tax Rate */}
+                  <div className="bg-gradient-to-br from-[#f8bf51]/10 to-[#f8bf51]/5 p-6 rounded-2xl border-2 border-[#f8bf51]/20">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Plus size={16} className="text-[#234d1b]" />
+                      <h4 className="text-xs font-black uppercase tracking-widest text-[#234d1b]">
+                        Add New Tax Rate
+                      </h4>
+                    </div>
+                    <div className="flex flex-col md:flex-row gap-3">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          className="w-full bg-white border-2 border-gray-200 focus:border-[#f8bf51] rounded-xl py-3 px-4 outline-none transition-all font-bold text-[#234d1b]"
+                          placeholder="Tax Name (e.g., GST, VAT, Sales Tax)"
+                          value={newTaxRate.name}
+                          onChange={(e) =>
+                            setNewTaxRate({
+                              ...newTaxRate,
+                              name: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="w-full md:w-40">
+                        <div className="relative">
+                          <input
+                            type="number"
+                            step="0.01"
+                            className="w-full bg-white border-2 border-gray-200 focus:border-[#f8bf51] rounded-xl py-3 pl-4 pr-10 outline-none transition-all font-bold text-[#234d1b]"
+                            placeholder="Rate"
+                            value={newTaxRate.rate}
+                            onChange={(e) =>
+                              setNewTaxRate({
+                                ...newTaxRate,
+                                rate: e.target.value,
+                              })
+                            }
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
+                            %
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={addTaxRate}
+                        className="px-8 py-3 bg-[#234d1b] text-white rounded-xl font-black hover:bg-[#1a3a14] transition-all flex items-center justify-center gap-2 uppercase tracking-wider text-sm shadow-lg hover:shadow-xl active:scale-95"
+                      >
+                        <Plus size={18} strokeWidth={3} />
+                        Add Tax
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-3 flex items-center gap-2">
+                      <AlertCircle size={12} />
+                      The first tax rate added will be set as default
+                      automatically
+                    </p>
                   </div>
                 </div>
               </div>
@@ -788,108 +839,6 @@ export default function SettingsClient({
                           development and live keys only in production.
                         </p>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </SettingsCard>
-          )}
-
-          {/* Checkout Rules Tab */}
-          {activeTab === "checkout" && (
-            <SettingsCard>
-              <CardHeader
-                icon={<ShieldCheck size={20} />}
-                title="Checkout Rules"
-                description="Configure checkout and order management settings"
-              />
-              <div className="space-y-4">
-                <ToggleSwitch
-                  checked={settings.manageInventory || false}
-                  onChange={() =>
-                    setSettings({
-                      ...settings,
-                      manageInventory: !settings.manageInventory,
-                    })
-                  }
-                  label="Manage Inventory"
-                  description="Track stock levels and prevent overselling"
-                />
-
-                <ToggleSwitch
-                  checked={settings.allowOrderCancellation || false}
-                  onChange={() =>
-                    setSettings({
-                      ...settings,
-                      allowOrderCancellation: !settings.allowOrderCancellation,
-                    })
-                  }
-                  label="Allow Order Cancellation"
-                  description="Let customers cancel their orders"
-                />
-
-                <ToggleSwitch
-                  checked={settings.allowScheduledOrders || false}
-                  onChange={() =>
-                    setSettings({
-                      ...settings,
-                      allowScheduledOrders: !settings.allowScheduledOrders,
-                    })
-                  }
-                  label="Allow Scheduled Orders"
-                  description="Enable customers to schedule delivery dates"
-                />
-
-                <ToggleSwitch
-                  checked={settings.isMaintenanceMode || false}
-                  onChange={() =>
-                    setSettings({
-                      ...settings,
-                      isMaintenanceMode: !settings.isMaintenanceMode,
-                    })
-                  }
-                  label="Maintenance Mode"
-                  description="Temporarily disable the store for maintenance"
-                />
-
-                <div className="border-t border-gray-100 pt-6 mt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <FieldLabel>Minimum Order Value (₹)</FieldLabel>
-                      <input
-                        type="number"
-                        className={INPUT_CLASS}
-                        value={settings.minOrderValue || ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            minOrderValue: Number(e.target.value),
-                          })
-                        }
-                        placeholder="0"
-                      />
-                      <p className="text-xs text-gray-500 mt-1.5">
-                        Minimum amount required to place an order
-                      </p>
-                    </div>
-
-                    <div>
-                      <FieldLabel>Low Stock Threshold</FieldLabel>
-                      <input
-                        type="number"
-                        className={INPUT_CLASS}
-                        value={settings.lowStockThreshold || ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            lowStockThreshold: Number(e.target.value),
-                          })
-                        }
-                        placeholder="10"
-                      />
-                      <p className="text-xs text-gray-500 mt-1.5">
-                        Get notified when stock falls below this level
-                      </p>
                     </div>
                   </div>
                 </div>

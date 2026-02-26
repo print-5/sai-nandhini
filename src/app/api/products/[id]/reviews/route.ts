@@ -5,6 +5,7 @@ import User from "@/models/User";
 import Order from "@/models/Order";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import mongoose from "mongoose";
 
 export async function GET(
   req: NextRequest,
@@ -22,7 +23,12 @@ export async function GET(
 
     // Calculate rating statistics
     const stats = await Review.aggregate([
-      { $match: { product: id, isApproved: true } },
+      { 
+        $match: { 
+          product: new mongoose.Types.ObjectId(id), 
+          isApproved: true 
+        } 
+      },
       {
         $group: {
           _id: "$rating",

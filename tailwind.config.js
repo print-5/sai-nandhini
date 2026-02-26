@@ -9,21 +9,21 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#1F4D2B", // Deep Green Header & Footer
-          light: "#2E6B3F",   // Lighter Green for hovers
-          dark: "#14331D",    // Darker Green for text
+          DEFAULT: "#3d7935", // Green from palette
+          light: "#3d7935", // Same green for hovers
+          dark: "#234d1b", // Dark green for text
         },
         secondary: {
-          DEFAULT: "#FAF3E0", // Cream Beige Background
-          dark: "#F0E6D2",    // Slightly darker cream
+          DEFAULT: "#ece0cc", // Cream Background
+          dark: "#ffd788", // Light gold
         },
         brown: {
           DEFAULT: "#8B5E3C", // Soft Brown Accent
           light: "#A07050",
         },
         accent: {
-          DEFAULT: "#FBC02D", // Warm Yellow Buttons
-          hover: "#F9A825",
+          DEFAULT: "#f8bf51", // Golden CTA Buttons
+          hover: "#ffd788",
         },
       },
       fontFamily: {
