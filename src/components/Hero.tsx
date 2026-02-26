@@ -45,7 +45,7 @@ export default function Hero() {
       </div>
 
       {/* Content */}
-      <div className="w-full px-6 md:px-12 lg:px-24 relative z-10 pt-32 pb-20">
+      <div className="w-full px-6 md:px-12 lg:px-24 relative z-10 pt-44 pb-20">
         <div className="max-w-3xl">
           {/* Trust Badge */}
           <motion.div

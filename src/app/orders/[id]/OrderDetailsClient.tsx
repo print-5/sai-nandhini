@@ -66,21 +66,21 @@ export default function OrderDetailsClient({
     order.status || (order.isDelivered ? "Delivered" : "Pending");
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-20">
-      <div className="pt-32 max-w-5xl mx-auto px-4 sm:px-6">
+    <main className="min-h-screen bg-gray-50 pb-20 overflow-hidden">
+      <div className="pt-44 md:pt-44 max-w-5xl mx-auto px-4 sm:px-6">
         <Link
           href="/orders"
-          className="inline-flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-primary transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-gray-400 font-bold text-[10px] md:text-xs uppercase tracking-widest hover:text-primary transition-colors mb-6 md:mb-8"
         >
-          <ChevronLeft size={16} /> Back to My Orders
+          <ChevronLeft size={14} className="md:w-4 md:h-4" /> Back to My Orders
         </Link>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 mb-8 md:mb-12">
           <div>
-            <h1 className="text-4xl font-serif font-bold text-primary-dark">
+            <h1 className="text-2xl md:text-4xl font-serif font-bold text-primary-dark">
               Order #{order._id.slice(-8).toUpperCase()}
             </h1>
-            <p className="text-gray-400 mt-1 font-medium italic">
+            <p className="text-gray-400 mt-1 text-xs md:text-sm font-medium italic">
               Placed on{" "}
               {mounted ? new Date(order.createdAt).toLocaleDateString() : "..."}{" "}
               at{" "}
@@ -88,7 +88,7 @@ export default function OrderDetailsClient({
             </p>
           </div>
           <div
-            className={`px-6 py-3 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center gap-2 shadow-sm ${getStatusStyle(currentStatus)}`}
+            className={`px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold uppercase tracking-widest text-[10px] md:text-xs flex items-center gap-2 shadow-sm ${getStatusStyle(currentStatus)}`}
           >
             {getStatusIcon(currentStatus)}
             {currentStatus}
@@ -98,9 +98,10 @@ export default function OrderDetailsClient({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* Order Items */}
-            <div className="bg-white p-10 rounded-[2.5rem] shadow-sm">
-              <h3 className="text-xl font-serif font-bold text-primary-dark mb-8 flex items-center gap-3">
-                <Package className="text-primary" /> Purchased Delicacies
+            <div className="bg-white p-5 md:p-10 rounded-3xl md:rounded-[2.5rem] shadow-sm">
+              <h3 className="text-lg md:text-xl font-serif font-bold text-primary-dark mb-6 md:mb-8 flex items-center gap-3">
+                <Package className="text-primary" size={20} /> Purchased
+                Delicacies
               </h3>
               <div className="space-y-6">
                 {order.orderItems.map((item: any, i: number) => (
@@ -145,9 +146,10 @@ export default function OrderDetailsClient({
             </div>
 
             {/* Shipping Info */}
-            <div className="bg-white p-10 rounded-[2.5rem] shadow-sm">
-              <h3 className="text-xl font-serif font-bold text-primary-dark mb-8 flex items-center gap-3">
-                <MapPin className="text-primary" /> Delivery Destination
+            <div className="bg-white p-5 md:p-10 rounded-3xl md:rounded-[2.5rem] shadow-sm">
+              <h3 className="text-lg md:text-xl font-serif font-bold text-primary-dark mb-6 md:mb-8 flex items-center gap-3">
+                <MapPin className="text-primary" size={20} /> Delivery
+                Destination
               </h3>
               <div className="text-gray-500 space-y-2 font-medium">
                 <p className="text-primary-dark font-bold text-lg">
@@ -185,9 +187,9 @@ export default function OrderDetailsClient({
             </div>
           </div>
 
-          <aside className="space-y-8 h-fit">
-            <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border-2 border-primary/5">
-              <h3 className="text-xl font-serif font-bold text-primary-dark mb-8">
+          <aside className="space-y-6 md:space-y-8 h-fit">
+            <div className="bg-white p-5 md:p-10 rounded-3xl md:rounded-[2.5rem] shadow-sm border-2 border-primary/5">
+              <h3 className="text-lg md:text-xl font-serif font-bold text-primary-dark mb-6 md:mb-8">
                 Financial Summary
               </h3>
               <div className="space-y-4 mb-8">

@@ -185,7 +185,7 @@ export default function HeroCarousel({
       </div>
 
       {/* ───── Main Carousel Content ───── */}
-      <div className="relative z-10 max-w-[1440px] mx-auto min-h-[85vh] md:min-h-[720px] flex items-center px-6 md:px-12 lg:px-20 pt-32 md:pt-28 pb-10">
+      <div className="relative z-10 max-w-[1440px] mx-auto min-h-[85vh] md:min-h-[720px] flex items-center px-6 md:px-12 lg:px-20 pt-44 md:pt-44 pb-10">
         <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-4 items-center">
           {/* ── Left: Text Content ── */}
           <AnimatePresence mode="wait" custom={direction}>

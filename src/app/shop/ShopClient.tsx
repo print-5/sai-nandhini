@@ -51,6 +51,7 @@ export default function ShopClient({
   const [manageInventory] = useState(initialManageInventory);
   const [sortBy, setSortBy] = useState("Recommended");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const itemsPerPage = 8;
 
   const filteredProducts = useMemo(() => {
@@ -102,7 +103,7 @@ export default function ShopClient({
   return (
     <div className="bg-[#FCFCFA]">
       {/* 1. Ultra-Compact Product Header (Reduced Hero Height) */}
-      <section className="bg-secondary border-b border-primary/10 py-10 pt-32">
+      <section className="bg-secondary border-b border-primary/10 py-10 pt-44 md:pt-44">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
@@ -112,10 +113,10 @@ export default function ShopClient({
                   Direct from our kitchen
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-serif font-black text-primary-dark">
+              <h1 className="text-3xl md:text-5xl font-serif font-black text-primary-dark">
                 Authentic Flavors
               </h1>
-              <p className="text-primary-dark/60 mt-2 text-sm font-sans font-medium">
+              <p className="text-primary-dark/60 mt-2 text-xs md:text-sm font-sans font-medium">
                 Showing {filteredProducts.length} Premium Treats
               </p>
             </div>
@@ -134,15 +135,30 @@ export default function ShopClient({
                 className="w-full bg-white border border-primary/10 rounded-full py-3 pl-11 pr-4 text-xs font-sans font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all text-primary-dark placeholder:text-primary/30"
               />
             </div>
+
+            {/* Mobile Search */}
+            <div className="relative md:hidden w-full mt-2">
+              <SearchIcon
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40"
+                size={14}
+              />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                className="w-full bg-white border border-primary/10 rounded-full py-2.5 pl-10 pr-4 text-xs font-sans font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all text-primary-dark placeholder:text-primary/30 shadow-sm"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-10">
-        <div className="flex flex-col lg:flex-row gap-10">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-6 md:py-10">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
           {/* 2. Modern Sidebar Filters (Amazon/Flipkart Style) */}
-          {/* 2. Modern Sidebar Filters (Amazon/Flipkart Style) */}
-          <aside className="lg:w-72 shrink-0 space-y-8 bg-white/50 p-6 rounded-[2rem] border border-primary/5 h-fit sticky top-24">
+          {/* 2. Modern Sidebar Filters (Hidden on Mobile) */}
+          <aside className="hidden lg:block lg:w-72 shrink-0 space-y-8 bg-white/50 p-6 rounded-[2rem] border border-primary/5 h-fit sticky top-24">
             {/* Active Filters Summary */}
             {(activeCategory !== "All" || inStockOnly || minRating > 0) && (
               <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
@@ -298,11 +314,17 @@ export default function ShopClient({
           {/* 3. High-Density Product Grid (Bringing Items Above Fold) */}
           <div className="flex-grow">
             {/* Utility Bar */}
-            <div className="flex items-center justify-between mb-8 bg-white/50 p-4 rounded-2xl border border-primary/5 shadow-sm backdrop-blur-sm">
-              <div className="flex items-center gap-4">
-                <button className="flex items-center gap-2 text-[10px] font-sans font-black text-primary-dark uppercase tracking-widest">
+            <div className="flex items-center justify-between mb-6 md:mb-8 bg-white/50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-primary/5 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center gap-2 md:gap-4">
+                <button
+                  onClick={() => setShowMobileFilters(true)}
+                  className="flex lg:hidden items-center gap-2 text-[10px] font-sans font-black text-primary-dark uppercase tracking-widest bg-primary/5 px-3 py-2 rounded-lg"
+                >
                   <Filter size={14} /> Filters
                 </button>
+                <div className="hidden lg:flex items-center gap-2 text-[10px] font-sans font-black text-primary-dark uppercase tracking-widest">
+                  <Filter size={14} /> Filters
+                </div>
                 <span className="h-4 w-px bg-primary/10"></span>
                 <p className="text-[10px] font-sans font-bold text-primary/40 uppercase tracking-widest">
                   {filteredProducts.length} Results
@@ -581,6 +603,180 @@ export default function ShopClient({
           ))}
         </div>
       </section>
+
+      {/* Mobile Filter Drawer */}
+      <AnimatePresence>
+        {showMobileFilters && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileFilters(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] lg:hidden"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white z-[101] shadow-2xl lg:hidden overflow-y-auto"
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-xl font-serif font-black text-primary-dark uppercase tracking-wider">
+                    Filters
+                  </h2>
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-primary-dark"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="space-y-10 pb-20">
+                  {/* Reuse Sidebar logic inside Drawer */}
+                  <div className="bg-primary/5 p-5 rounded-2xl border border-primary/10">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="text-[10px] font-sans font-black uppercase tracking-widest text-primary-dark">
+                        Active Filters
+                      </h4>
+                      <button
+                        onClick={() => {
+                          setActiveCategory("All");
+                          setInStockOnly(false);
+                          setMinRating(0);
+                        }}
+                        className="text-[9px] font-sans font-bold text-primary hover:underline"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {activeCategory === "All" && !inStockOnly && (
+                        <span className="text-[10px] text-gray-400 font-bold uppercase italic">
+                          None Active
+                        </span>
+                      )}
+                      {activeCategory !== "All" && (
+                        <span className="px-3 py-1.5 bg-white text-[10px] font-sans font-bold rounded-lg border border-primary/20 text-primary flex items-center gap-2">
+                          {activeCategory}{" "}
+                          <X
+                            size={12}
+                            className="cursor-pointer"
+                            onClick={() => setActiveCategory("All")}
+                          />
+                        </span>
+                      )}
+                      {inStockOnly && (
+                        <span className="px-3 py-1.5 bg-white text-[10px] font-sans font-bold rounded-lg border border-primary/20 text-primary flex items-center gap-2">
+                          In Stock{" "}
+                          <X
+                            size={12}
+                            className="cursor-pointer"
+                            onClick={() => setInStockOnly(false)}
+                          />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Categories */}
+                  <div>
+                    <h3 className="text-[12px] font-sans font-black text-primary-dark uppercase tracking-widest mb-4">
+                      Categories
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setActiveCategory("All")}
+                        className={`text-left px-4 py-3 rounded-xl text-xs font-sans font-bold transition-all ${activeCategory === "All" ? "bg-primary-dark text-white shadow-lg" : "bg-gray-50 text-primary/60"}`}
+                      >
+                        All
+                      </button>
+                      {categories.map((cat) => (
+                        <button
+                          key={cat._id}
+                          onClick={() => setActiveCategory(cat.name)}
+                          className={`text-left px-4 py-3 rounded-xl text-xs font-sans font-bold transition-all ${activeCategory === cat.name ? "bg-primary-dark text-white shadow-lg" : "bg-gray-50 text-primary/60"}`}
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    <h3 className="text-[12px] font-sans font-black text-primary-dark uppercase tracking-widest mb-4">
+                      Price Range
+                    </h3>
+                    <input
+                      type="range"
+                      min="0"
+                      max="2000"
+                      value={priceRange[1]}
+                      onChange={(e) =>
+                        setPriceRange([0, parseInt(e.target.value)])
+                      }
+                      className="w-full accent-primary h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <div className="flex justify-between mt-3 px-1">
+                      <span className="text-[10px] font-sans font-bold text-gray-400">
+                        ₹0
+                      </span>
+                      <span className="text-[12px] font-sans font-black text-primary-dark">
+                        Up to ₹{priceRange[1]}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Ratings */}
+                  <div>
+                    <h3 className="text-[12px] font-sans font-black text-primary-dark uppercase tracking-widest mb-4">
+                      Min Rating
+                    </h3>
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                      {[4, 3, 2].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setMinRating(star)}
+                          className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-sans font-bold transition-all border-2 ${minRating === star ? "border-primary bg-primary/5 text-primary-dark" : "border-gray-100 text-gray-500 hover:border-primary/30"}`}
+                        >
+                          {star}★ & Up
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Availability */}
+                  <label className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl cursor-pointer">
+                    <span className="text-sm font-sans font-black text-primary-dark uppercase tracking-wider">
+                      In Stock Only
+                    </span>
+                    <div
+                      className={`w-12 h-6.5 rounded-full p-1 transition-all ${inStockOnly ? "bg-primary" : "bg-gray-300"}`}
+                      onClick={() => setInStockOnly(!inStockOnly)}
+                    >
+                      <motion.div
+                        animate={{ x: inStockOnly ? 22 : 0 }}
+                        className="w-4.5 h-4.5 bg-white rounded-full shadow-sm"
+                      />
+                    </div>
+                  </label>
+
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20"
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

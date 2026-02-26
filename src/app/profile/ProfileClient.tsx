@@ -97,25 +97,25 @@ export default function ProfileClient() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-secondary/30 flex flex-col">
-      <div className="flex-grow pt-32 pb-20 max-w-4xl mx-auto px-4 sm:px-6 w-full">
+      <div className="flex-grow pt-44 md:pt-44 pb-20 max-w-4xl mx-auto px-4 sm:px-6 w-full text-wrap overflow-hidden">
         {/* Header Section */}
-        <div className="mb-12">
-          <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-3 block">
+        <div className="mb-8 md:mb-12">
+          <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-2 md:mb-3 block">
             Account Details
           </span>
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary-dark">
+          <h1 className="text-3xl md:text-5xl font-serif font-bold text-primary-dark">
             My <span className="text-primary italic">Profile</span>
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* User Info Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="md:col-span-1"
           >
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-full flex flex-col">
+            <div className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-gray-100 h-full flex flex-col">
               <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 {session.user.image ? (
                   <img
@@ -127,10 +127,10 @@ export default function ProfileClient() {
                   <UserIcon size={40} className="text-primary" />
                 )}
               </div>
-              <h2 className="text-2xl font-bold text-center text-primary-dark mb-1">
+              <h2 className="text-xl md:text-2xl font-bold text-center text-primary-dark mb-1 break-words px-2">
                 {session.user.name}
               </h2>
-              <p className="text-gray-500 text-center text-sm font-medium mb-8">
+              <p className="text-gray-500 text-center text-xs md:text-sm font-medium mb-8 break-all px-2">
                 {session.user.email}
               </p>
 
@@ -157,7 +157,7 @@ export default function ProfileClient() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-3xl p-8 flex flex-col shadow-sm border border-gray-100"
+              className="bg-white rounded-3xl p-5 md:p-8 flex flex-col shadow-sm border border-gray-100"
             >
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
@@ -174,9 +174,9 @@ export default function ProfileClient() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-gray-100 rounded-2xl bg-gray-50/50">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-5 border border-gray-100 rounded-2xl bg-gray-50/50 gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white shadow-sm border border-gray-100 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-white shadow-sm border border-gray-100 rounded-full flex items-center justify-center shrink-0">
                       <svg width="18" height="18" viewBox="0 0 24 24">
                         <path
                           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -198,7 +198,7 @@ export default function ProfileClient() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-800">Google</p>
-                      <p className="text-xs text-gray-500 font-medium shrink-0 max-w-[200px] sm:max-w-none truncate">
+                      <p className="text-xs text-gray-500 font-medium">
                         Link your Google account to log in instantly.
                       </p>
                     </div>
@@ -206,7 +206,7 @@ export default function ProfileClient() {
                   <button
                     onClick={handleLinkGoogle}
                     disabled={isLinking}
-                    className="flex-shrink-0 px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
                   >
                     {isLinking ? "Redirecting..." : "Link Google"}
                   </button>
@@ -221,7 +221,7 @@ export default function ProfileClient() {
               transition={{ delay: 0.2 }}
               className="md:col-span-2 space-y-8"
             >
-              <div className="bg-white rounded-3xl p-8 flex flex-col shadow-sm border border-gray-100">
+              <div className="bg-white rounded-3xl p-5 md:p-8 flex flex-col shadow-sm border border-gray-100">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
                     <Lock size={20} />

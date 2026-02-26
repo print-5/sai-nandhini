@@ -128,18 +128,18 @@ export default function OrdersListClient({
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-secondary/30 flex flex-col">
-      <div className="flex-grow pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 w-full">
+      <div className="flex-grow pt-44 md:pt-44 pb-20 max-w-7xl mx-auto px-4 sm:px-6 w-full">
         {/* Header Section */}
-        <div className="mb-12">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
+        <div className="mb-8 md:mb-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6 mb-8">
             <div>
-              <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-3 block">
+              <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-2 md:mb-3 block">
                 Order History
               </span>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary-dark">
+              <h1 className="text-3xl md:text-5xl font-serif font-bold text-primary-dark">
                 Your <span className="text-primary italic">Orders</span>
               </h1>
-              <p className="text-gray-500 mt-2 font-medium">
+              <p className="text-gray-500 mt-1 md:mt-2 text-sm font-medium">
                 Track and manage all your purchases
               </p>
             </div>
@@ -175,13 +175,13 @@ export default function OrdersListClient({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm"
+                  className="bg-white rounded-2xl p-4 md:p-6 border border-gray-100 shadow-sm"
                 >
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                  <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 md:mb-2">
                     {stat.label}
                   </p>
                   <p
-                    className={`text-3xl font-bold text-${stat.color === "primary" ? "primary-dark" : stat.color + "-600"}`}
+                    className={`text-2xl md:text-3xl font-bold text-${stat.color === "primary" ? "primary-dark" : stat.color + "-600"}`}
                   >
                     {stat.value}
                   </p>

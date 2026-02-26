@@ -157,9 +157,12 @@ export default function Navbar() {
               </button>
 
               {/* Brand Logo */}
-              <Link href="/" className="flex flex-col items-center group">
+              <Link
+                href="/"
+                className="flex flex-col items-center group flex-shrink-0"
+              >
                 {settings?.logo ? (
-                  <div className="h-16 md:h-20 lg:h-24 w-64 md:w-80 lg:w-96 relative">
+                  <div className="h-12 md:h-20 lg:h-24 w-32 md:w-80 lg:w-96 relative">
                     <Image
                       src={settings.logo}
                       alt={settings.shopName || "Sai Nandhini"}
@@ -169,23 +172,16 @@ export default function Navbar() {
                     />
                   </div>
                 ) : (
-                  <>
-                    <span className="text-2xl md:text-3xl font-serif font-black text-white tracking-normal leading-none group-hover:text-[#f8bf51] transition-colors">
+                  <div className="flex flex-col items-center">
+                    <span className="text-lg md:text-3xl font-serif font-black text-white tracking-tight leading-none group-hover:text-[#f8bf51] transition-colors">
                       {settings?.shopName?.split(" ").slice(0, 2).join(" ") ||
                         "Sai Nandhini"}
                     </span>
-                    <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#f8bf51] leading-none mt-1">
+                    <span className="text-[8px] md:text-[10px] uppercase font-bold tracking-[0.2em] md:tracking-[0.3em] text-[#f8bf51] leading-none mt-1">
                       {settings?.shopName?.split(" ").slice(2).join(" ") ||
-                        "Tasty World"}{" "}
-                      {settings?.address
-                        ?.split(",")
-                        .slice(-2, -1)[0]
-                        ?.trim()
-                        .includes("Madurai")
-                        ? "– Madurai"
-                        : ""}
+                        "Tasty World"}
                     </span>
-                  </>
+                  </div>
                 )}
               </Link>
 
@@ -252,7 +248,7 @@ export default function Navbar() {
               </div>
 
               {/* Action Icons */}
-              <div className="flex items-center gap-2 md:gap-4">
+              <div className="flex items-center gap-1 md:gap-4 shrink-0">
                 {session ? (
                   <Link
                     href={

@@ -46,22 +46,25 @@ export default function LoginPage() {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md p-8 relative z-10"
+        className="w-full max-w-md p-4 md:p-8 relative z-10"
       >
-        <div className="glass-card p-10">
-          <div className="text-center mb-10">
-            <Link href="/" className="inline-flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg">
+        <div className="glass-card p-6 md:p-10">
+          <div className="text-center mb-6 md:mb-10">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 mb-4 md:mb-6"
+            >
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg md:text-xl shadow-lg">
                 S
               </div>
-              <span className="text-2xl font-serif font-bold text-primary-dark">
+              <span className="text-xl md:text-2xl font-serif font-bold text-primary-dark">
                 Sai Nandhini
               </span>
             </Link>
-            <h2 className="text-3xl font-serif font-bold text-primary-dark">
+            <h2 className="text-2xl md:text-3xl font-serif font-bold text-primary-dark">
               Welcome Back
             </h2>
-            <p className="text-gray-500 mt-2 font-medium">
+            <p className="text-gray-500 mt-1 md:mt-2 text-sm font-medium">
               Please enter your details to sign in
             </p>
           </div>

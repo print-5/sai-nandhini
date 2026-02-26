@@ -16,7 +16,9 @@ async function getPageData(slug: string) {
   return page ? JSON.parse(JSON.stringify(page)) : null;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const page = await getPageData(slug);
 
@@ -43,9 +45,9 @@ export default async function LegalPage({ params }: PageProps) {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <Navbar />
-      
+
       {/* Hero Section */}
-      <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/5 to-accent/5">
+      <div className="pt-44 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/5 to-accent/5">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-lg mb-6">
             <Shield className="text-primary" size={32} />
@@ -115,7 +117,10 @@ export default async function LegalPage({ params }: PageProps) {
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-500">
               If you have any questions about this policy, please{" "}
-              <a href="/contact" className="text-accent font-semibold hover:underline">
+              <a
+                href="/contact"
+                className="text-accent font-semibold hover:underline"
+              >
                 contact us
               </a>
               .

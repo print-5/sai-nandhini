@@ -26,7 +26,7 @@ import {
   Package,
   IndianRupee,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { useCart } from "@/context/CartContext";
 import CouponInput from "@/components/CouponInput";
@@ -46,6 +46,7 @@ export default function CheckoutClient({
   const { cartItems, cartTotal, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("prepaid");
+  const [showSummary, setShowSummary] = useState(false);
   const [taxRate] = useState(() => {
     if (initialSettings.taxRates && initialSettings.taxRates.length > 0) {
       const defaultTax =
@@ -327,7 +328,7 @@ export default function CheckoutClient({
         strategy="lazyOnload"
       />
 
-      <div className="pt-32 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-44 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Enhanced Progress Indicator */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -337,8 +338,8 @@ export default function CheckoutClient({
           <div className="max-w-md mx-auto">
             <div className="flex items-center justify-between relative">
               {/* Background Line */}
-              <div className="absolute top-6 left-0 right-0 h-0.5 bg-gray-200" />
-              <div className="absolute top-6 left-0 w-1/2 h-0.5 bg-primary transition-all duration-500" />
+              <div className="absolute top-5 md:top-6 left-0 right-0 h-0.5 bg-gray-200" />
+              <div className="absolute top-5 md:top-6 left-0 w-1/2 h-0.5 bg-primary transition-all duration-500" />
 
               {/* Step 1 - Active */}
               <div className="flex flex-col items-center relative z-10">
@@ -346,31 +347,31 @@ export default function CheckoutClient({
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg ring-4 ring-primary/20"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg ring-4 ring-primary/20"
                 >
-                  <MapPin size={20} />
+                  <MapPin size={18} className="md:w-5 md:h-5" />
                 </motion.div>
-                <span className="text-xs font-semibold text-primary mt-3">
+                <span className="text-[10px] md:text-xs font-semibold text-primary mt-2 md:mt-3">
                   Delivery
                 </span>
               </div>
 
               {/* Step 2 - Pending */}
               <div className="flex flex-col items-center relative z-10">
-                <div className="w-12 h-12 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center shadow-sm">
-                  <CreditCard size={20} />
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center shadow-sm">
+                  <CreditCard size={18} className="md:w-5 md:h-5" />
                 </div>
-                <span className="text-xs font-semibold text-gray-400 mt-3">
+                <span className="text-[10px] md:text-xs font-semibold text-gray-400 mt-2 md:mt-3">
                   Payment
                 </span>
               </div>
 
               {/* Step 3 - Pending */}
               <div className="flex flex-col items-center relative z-10">
-                <div className="w-12 h-12 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center shadow-sm">
-                  <Check size={20} />
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center shadow-sm">
+                  <Check size={18} className="md:w-5 md:h-5" />
                 </div>
-                <span className="text-xs font-semibold text-gray-400 mt-3">
+                <span className="text-[10px] md:text-xs font-semibold text-gray-400 mt-2 md:mt-3">
                   Complete
                 </span>
               </div>
@@ -378,7 +379,7 @@ export default function CheckoutClient({
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Left Column - Forms */}
           <div className="lg:col-span-2 space-y-6">
             {/* Delivery Details Card */}
@@ -388,19 +389,19 @@ export default function CheckoutClient({
               transition={{ delay: 0.3 }}
               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
             >
-              <div className="bg-gradient-to-r from-primary to-primary-dark px-8 py-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                    <MapPin className="text-white" size={20} />
+              <div className="bg-gradient-to-r from-primary to-primary-dark px-5 md:px-8 py-4 md:py-6">
+                <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-3">
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <MapPin className="text-white" size={18} />
                   </div>
                   Delivery Information
                 </h2>
-                <p className="text-white/80 text-sm mt-2">
+                <p className="text-white/80 text-xs md:text-sm mt-1 md:mt-2">
                   Where should we deliver your order?
                 </p>
               </div>
 
-              <form className="p-8 space-y-6">
+              <form className="p-5 md:p-8 space-y-4 md:space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Full Name */}
                   <div className="md:col-span-2">
@@ -532,19 +533,19 @@ export default function CheckoutClient({
               transition={{ delay: 0.4 }}
               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
             >
-              <div className="bg-gradient-to-r from-primary to-primary-dark px-8 py-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                    <CreditCard className="text-white" size={20} />
+              <div className="bg-gradient-to-r from-primary to-primary-dark px-5 md:px-8 py-4 md:py-6">
+                <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-3">
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <CreditCard className="text-white" size={18} />
                   </div>
                   Payment Method
                 </h2>
-                <p className="text-white/80 text-sm mt-2">
+                <p className="text-white/80 text-xs md:text-sm mt-1 md:mt-2">
                   Choose your preferred payment option
                 </p>
               </div>
 
-              <div className="p-8 space-y-4">
+              <div className="p-5 md:p-8 space-y-4">
                 {/* Online Payment Option */}
                 <label
                   className={`group flex items-start gap-4 p-6 rounded-xl border-2 cursor-pointer transition-all ${
@@ -633,19 +634,19 @@ export default function CheckoutClient({
                     </div>
                   </div>
                   <div className="flex-grow">
-                    <div className="flex items-center gap-2 mb-2">
-                      <IndianRupee className="h-5 w-5 text-primary" />
-                      <p className="font-bold text-primary-dark text-lg">
+                    <div className="flex items-center gap-2 mb-1.5 md:mb-2 text-wrap">
+                      <IndianRupee className="h-5 w-5 text-primary flex-shrink-0" />
+                      <p className="font-bold text-primary-dark text-base md:text-lg">
                         Cash on Delivery
                       </p>
                     </div>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs md:text-sm text-gray-600">
                       {isCodAvailable
                         ? "Pay with cash when your order arrives"
                         : "Not available for selected items"}
                     </p>
                     {!isCodAvailable && (
-                      <p className="text-xs text-amber-600 mt-2 bg-amber-50 px-3 py-1.5 rounded-lg inline-block">
+                      <p className="text-[10px] md:text-xs text-amber-600 mt-2 bg-amber-50 px-3 py-1.5 rounded-lg inline-block">
                         ⚠️ Some items in your cart don't support COD
                       </p>
                     )}
@@ -714,9 +715,11 @@ export default function CheckoutClient({
               className="bg-white rounded-2xl shadow-xl border border-gray-100 sticky top-24 overflow-hidden"
             >
               {/* Summary Header with Gradient */}
-              <div className="bg-gradient-to-r from-[#f8bf51] to-[#d4b876] px-8 py-6">
-                <h2 className="text-xl font-bold text-white">Order Summary</h2>
-                <p className="text-white/80 text-sm mt-1">
+              <div className="bg-gradient-to-r from-[#f8bf51] to-[#d4b876] px-5 md:px-8 py-4 md:py-6">
+                <h2 className="text-lg md:text-xl font-bold text-white">
+                  Order Summary
+                </h2>
+                <p className="text-white/80 text-xs md:text-sm mt-1">
                   {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
                 </p>
               </div>
@@ -975,6 +978,109 @@ export default function CheckoutClient({
           </aside>
         </div>
       </div>
+
+      {/* Floating Sticky Summary for Mobile */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[50] pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setShowSummary(!showSummary)}
+              className="flex items-center gap-2 text-xs font-bold text-primary-dark uppercase tracking-widest"
+            >
+              Order Details {showSummary ? "↓" : "↑"}
+            </button>
+            <div className="text-right">
+              <p className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">
+                Total Amount
+              </p>
+              <p className="text-lg font-black text-primary">
+                ₹{totalPrice.toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={makePayment}
+            disabled={loading}
+            className="w-full bg-primary text-white py-4 rounded-xl font-black uppercase tracking-widest text-sm shadow-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50"
+          >
+            {loading ? (
+              <Loader2 className="animate-spin" size={20} />
+            ) : paymentMethod === "cod" ? (
+              <>
+                Confirm COD Order <ChevronRight size={18} />
+              </>
+            ) : (
+              <>
+                Proceed To Secure Pay <ChevronRight size={18} />
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Expandable Summary Overlay */}
+        <AnimatePresence>
+          {showSummary && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden bg-gray-50 border-t border-gray-100"
+            >
+              <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                {cartItems.map((item) => (
+                  <div key={item._id} className="flex justify-between text-sm">
+                    <span className="text-gray-600 line-clamp-1 flex-grow pr-4">
+                      {item.name} x {item.qty}
+                    </span>
+                    <span className="font-bold text-primary-dark shrink-0">
+                      ₹{(item.price * item.qty).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+                <div className="h-px bg-gray-200" />
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">Subtotal</span>
+                    <span className="font-bold">
+                      ₹{itemsPrice.toLocaleString()}
+                    </span>
+                  </div>
+                  {shippingPrice > 0 && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-400">Shipping</span>
+                      <span className="font-bold">
+                        ₹{shippingPrice.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400 text-wrap">
+                      GST ({(taxRate * 100).toFixed(0)}%)
+                    </span>
+                    <span className="font-bold">
+                      ₹{taxPrice.toLocaleString()}
+                    </span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-xs text-green-600">
+                      <span>Discount</span>
+                      <span className="font-bold">
+                        -₹{discountAmount.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Spacer for Floating Summary on Mobile */}
+      <div className="h-32 lg:hidden" />
+
+      <Footer />
     </main>
   );
 }
