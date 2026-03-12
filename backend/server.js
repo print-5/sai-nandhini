@@ -68,6 +68,20 @@ app.get("/api/health", (req, res) => {
     });
 });
 
+app.get("/", (req, res) => {
+    res.json({
+        message: "Sai Nandhini Tasty World API",
+        status: "running",
+        endpoints: {
+            health: "/api/health",
+            products: "/api/products",
+            orders: "/api/orders",
+            auth: "/api/auth",
+            categories: "/api/categories",
+        }
+    });
+});
+
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
