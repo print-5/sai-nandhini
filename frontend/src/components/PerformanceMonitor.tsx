@@ -16,8 +16,8 @@ export default function PerformanceMonitor() {
             "DNS Lookup": navEntry.domainLookupEnd - navEntry.domainLookupStart,
             "TCP Connection": navEntry.connectEnd - navEntry.connectStart,
             "Server Response": navEntry.responseEnd - navEntry.requestStart,
-            "DOM Content Loaded": navEntry.domContentLoadedEventEnd - navEntry.navigationStart,
-            "Page Load Complete": navEntry.loadEventEnd - navEntry.navigationStart,
+            "DOM Content Loaded": navEntry.domContentLoadedEventEnd - navEntry.startTime,
+            "Page Load Complete": navEntry.loadEventEnd - navEntry.startTime,
           });
         }
 
@@ -26,11 +26,13 @@ export default function PerformanceMonitor() {
         }
 
         if (entry.entryType === "first-input") {
-          console.log("⚡ FID (First Input Delay):", entry.processingStart - entry.startTime, "ms");
+          const fidEntry = entry as any; // PerformanceEventTiming
+          console.log("⚡ FID (First Input Delay):", fidEntry.processingStart - fidEntry.startTime, "ms");
         }
 
         if (entry.entryType === "layout-shift") {
-          console.log("📐 CLS (Cumulative Layout Shift):", entry.value);
+          const clsEntry = entry as any; // LayoutShift
+          console.log("📐 CLS (Cumulative Layout Shift):", clsEntry.value);
         }
       });
     });

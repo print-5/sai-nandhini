@@ -1,10 +1,7 @@
+"use client";
+
 import { Wifi, RefreshCw, Home, Phone } from "lucide-react";
 import Link from "next/link";
-
-export const metadata = {
-  title: "You're Offline | Sai Nandhini Tasty World",
-  description: "You're currently offline. Please check your internet connection.",
-};
 
 export default function OfflinePage() {
   return (

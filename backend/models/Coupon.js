@@ -81,9 +81,6 @@ const CouponSchema = new Schema(
     },
 );
 
-// Index for faster lookups by code
-CouponSchema.index({ code: 1 });
-
 const Coupon = models.Coupon || model("Coupon", CouponSchema);
 
 export default Coupon;
