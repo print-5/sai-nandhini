@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: "../.env" });
-dotenv.config(); // Also try the local .env
+dotenv.config(); // Loads .env from the current directory
 
 import express from 'express';
 import mongoose from 'mongoose';
