@@ -1,0 +1,22 @@
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
+
+const EnquirySchema = new Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    phone: { type: String, required: true },
+    type: {
+        type: String,
+        enum: ["Corporate Booking", "Event Catering", "Bulk Order", "Other"],
+        default: "Other"
+    },
+    message: { type: String, required: true },
+    status: {
+        type: String,
+        enum: ["New", "In Progress", "Completed"],
+        default: "New"
+    },
+    createdAt: { type: Date, default: Date.now }
+});
+
+export default mongoose.models.Enquiry || mongoose.model("Enquiry", EnquirySchema);
